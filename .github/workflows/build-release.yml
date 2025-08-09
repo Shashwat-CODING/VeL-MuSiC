@@ -25,7 +25,32 @@ jobs:
         with:
           channel: 'stable'
           
+      - name: 🔍 Find Flutter project directory
+        id: find-flutter
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            echo "FLUTTER_DIR=." >> $GITHUB_OUTPUT
+            echo "Flutter project found in root directory"
+          elif [ -f "flutter_app/pubspec.yaml" ]; then
+            echo "FLUTTER_DIR=flutter_app" >> $GITHUB_OUTPUT
+            echo "Flutter project found in flutter_app directory"
+          elif [ -f "app/pubspec.yaml" ]; then
+            echo "FLUTTER_DIR=app" >> $GITHUB_OUTPUT
+            echo "Flutter project found in app directory"
+          else
+            # Search for pubspec.yaml in any subdirectory
+            FLUTTER_DIR=$(find . -name "pubspec.yaml" -type f | head -1 | xargs dirname)
+            if [ -n "$FLUTTER_DIR" ]; then
+              echo "FLUTTER_DIR=$FLUTTER_DIR" >> $GITHUB_OUTPUT
+              echo "Flutter project found in $FLUTTER_DIR directory"
+            else
+              echo "No Flutter project found!"
+              exit 1
+            fi
+          fi
+          
       - name: 📦 Install Dependencies
+        working-directory: ${{ steps.find-flutter.outputs.FLUTTER_DIR }}
         run: flutter pub get
         
       - name: 🛠️ Build Universal APK
