@@ -128,7 +128,7 @@ lib/
 
 | Home Screen | Player | Library | Search |
 |-------------|---------|---------|---------|
-| ![Home](screenshots/home.png) | ![Player](screenshots/player.png) | ![Library](screenshots/library.png) | ![Search](screenshots/search.png) |
+| ![Home](screenshots/home.jpg) | ![Player](screenshots/player.jpg) | ![Library](screenshots/library.jpg) | ![Search](screenshots/search.jpg) |
 
 </div>
 
