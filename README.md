@@ -156,12 +156,14 @@ lib/
 
 | Platform | Version | Status |
 |----------|---------|---------|
-| Android | 5.0+ (API 21+) | ✅ Fully Supported |
-| iOS | 12.0+ | ✅ Fully Supported |
-| Web | Modern Browsers | ✅ Fully Supported |
-| Windows | 10+ | ✅ Fully Supported |
-| macOS | 10.14+ | ✅ Fully Supported |
-| Linux | Ubuntu 18.04+ | ✅ Fully Supported |
+| Android | 5.0+ (API 21+) | ✅ Fully Tested & Supported |
+| iOS | 12.0+ | ⚠️ Not Tested |
+| Web | Modern Browsers | ⚠️ Not Tested |
+| Windows | 10+ | ⚠️ Not Tested |
+| macOS | 10.14+ | ⚠️ Not Tested |
+| Linux | Ubuntu 18.04+ | ⚠️ Not Tested |
+
+> **Note**: This app has been thoroughly tested on Android devices. Other platforms may work but haven't been tested yet.
 
 ---
 
@@ -211,13 +213,13 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 - **GitHub Issues**: [Report bugs & request features](https://github.com/yourusername/vel-music/issues)
 - **Discussions**: [Join the community](https://github.com/yourusername/vel-music/discussions)
-- **Email**: your.email@example.com
+- **Contact**: Reach out to Shashwat for support and feedback
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by the VeL-MuSiC Team**
+**Made with ❤️ by Shashwat**
 
 [![GitHub stars](https://img.shields.io/github/stars/yourusername/vel-music?style=social)](https://github.com/yourusername/vel-music)
 [![GitHub forks](https://img.shields.io/github/forks/yourusername/vel-music?style=social)](https://github.com/yourusername/vel-music)
