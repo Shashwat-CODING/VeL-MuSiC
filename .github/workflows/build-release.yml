@@ -13,7 +13,9 @@ jobs:
     steps:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
-        
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: 🔧 Set up Java 17
         uses: actions/setup-java@v4
         with:
@@ -80,6 +82,17 @@ jobs:
               exit 1
             fi
           fi
+
+      - name: 📦 Get version info
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=$(date +'%Y%m%d-%H%M%S')
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Using version: $VERSION"
           
       - name: 📦 Install Dependencies
         working-directory: ${{ steps.find-flutter.outputs.FLUTTER_DIR }}
@@ -96,8 +109,84 @@ jobs:
       - name: 📦 Build Android App Bundle (AAB)
         working-directory: ${{ steps.find-flutter.outputs.FLUTTER_DIR }}
         run: flutter build appbundle --release
+
+      - name: 📁 Create APKs directory structure
+        run: |
+          mkdir -p apks/${{ steps.version.outputs.VERSION }}
+          
+      - name: 📋 Copy APKs to repository folder
+        run: |
+          # Copy universal APK
+          cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-release.apk apks/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-universal-${{ steps.version.outputs.VERSION }}.apk
+          
+          # Copy split APKs if they exist
+          if [ -f "${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk" ]; then
+            cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk apks/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-armeabi-v7a-${{ steps.version.outputs.VERSION }}.apk
+          fi
+          
+          if [ -f "${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk" ]; then
+            cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk apks/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-arm64-v8a-${{ steps.version.outputs.VERSION }}.apk
+          fi
+          
+          if [ -f "${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-x86_64-release.apk" ]; then
+            cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-x86_64-release.apk apks/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-x86_64-${{ steps.version.outputs.VERSION }}.apk
+          fi
+          
+          # Copy AAB file
+          if [ -f "${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/bundle/release/app-release.aab" ]; then
+            cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/bundle/release/app-release.aab apks/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-${{ steps.version.outputs.VERSION }}.aab
+          fi
+          
+          # Create a build info file
+          echo "Build Information" > apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "=================" >> apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "Version: ${{ steps.version.outputs.VERSION }}" >> apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "Build Date: $(date -u)" >> apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "Commit SHA: ${{ github.sha }}" >> apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "Branch/Tag: ${{ github.ref }}" >> apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "Workflow: ${{ github.workflow }}" >> apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "Run ID: ${{ github.run_id }}" >> apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          
+      - name: 📝 Update APKs index
+        run: |
+          # Create or update the index file
+          if [ ! -f "apks/README.md" ]; then
+            echo "# VeL-MuSiC APK Downloads" > apks/README.md
+            echo "" >> apks/README.md
+            echo "This directory contains all built APKs and AAB files for VeL-MuSiC." >> apks/README.md
+            echo "" >> apks/README.md
+            echo "## Available Builds" >> apks/README.md
+            echo "" >> apks/README.md
+          fi
+          
+          # Add current build to index
+          echo "### Version ${{ steps.version.outputs.VERSION }}" >> apks/README.md
+          echo "- **Build Date:** $(date -u)" >> apks/README.md
+          echo "- **Commit:** [${{ github.sha }}](../../commit/${{ github.sha }})" >> apks/README.md
+          echo "- **Files:**" >> apks/README.md
+          
+          # List all files in the version directory
+          for file in apks/${{ steps.version.outputs.VERSION }}/*; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              echo "  - [$filename](${{ steps.version.outputs.VERSION }}/$filename)" >> apks/README.md
+            fi
+          done
+          echo "" >> apks/README.md
+          
+      - name: 🚀 Commit APKs to repository
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add apks/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Add APKs for version ${{ steps.version.outputs.VERSION }}"
+            git push
+          fi
         
-      - name: 📤 Upload to GitHub Release
+      - name: 📤 Upload to GitHub Release (for tagged builds)
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
@@ -107,5 +196,29 @@ jobs:
             ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-x86_64-release.apk
             ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/bundle/release/app-release.aab
+          body: |
+            ## VeL-MuSiC Release ${{ steps.version.outputs.VERSION }}
+            
+            ### 📱 Download Options
+            
+            **Universal APK (Recommended for most users):**
+            - `app-release.apk` - Works on all Android devices
+            
+            **Optimized APKs (Smaller file size):**
+            - `app-armeabi-v7a-release.apk` - For older 32-bit ARM devices
+            - `app-arm64-v8a-release.apk` - For modern 64-bit ARM devices (most common)
+            - `app-x86_64-release.apk` - For x86_64 devices
+            
+            **For Play Store:**
+            - `app-release.aab` - Android App Bundle for Google Play Store
+            
+            ### 📋 Build Information
+            - **Build Date:** $(date -u)
+            - **Commit:** ${{ github.sha }}
+            
+            ### 📁 Repository APKs
+            All builds are also available in the [apks folder](../../tree/main/apks) of this repository.
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
