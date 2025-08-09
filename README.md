@@ -61,7 +61,7 @@
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/vel-music.git
+   git clone https://github.com/Shashwat-CODING/VeL-MuSiC.git
    cd vel-music
    ```
 
@@ -211,8 +211,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 📞 Support
 
-- **GitHub Issues**: [Report bugs & request features](https://github.com/yourusername/vel-music/issues)
-- **Discussions**: [Join the community](https://github.com/yourusername/vel-music/discussions)
+- **GitHub Issues**: [Report bugs & request features](https://github.com/Shashwat-CODING/VeL-MuSiC/issues)
 - **Contact**: Reach out to Shashwat for support and feedback
 
 ---
