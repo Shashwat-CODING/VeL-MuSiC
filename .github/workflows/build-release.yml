@@ -1,0 +1,46 @@
+name: Build & Release VeL-MuSiC
+
+on:
+  push:
+    tags:
+      - 'v*'  # Run only when a version tag like v1.0.0 is pushed
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.8.1'
+
+      - name: 📦 Install Dependencies
+        run: flutter pub get
+
+      - name: 🛠️ Build Universal APK
+        run: flutter build apk --release
+
+      - name: 🛠️ Build Split APKs (per ABI)
+        run: flutter build apk --release --split-per-abi
+
+      - name: 📦 Build Android App Bundle (AAB)
+        run: flutter build appbundle --release
+
+      - name: 📤 Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: "🎵 VeL-MuSiC V1.0.0"
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            build/app/outputs/flutter-apk/app-x86_64-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
