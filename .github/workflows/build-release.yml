@@ -3,7 +3,7 @@ name: Build & Release VeL-MuSiC
 on:
   push:
     tags:
-      - 'v*'  # Run only when a version tag like v1.0.0 is pushed
+      - 'v*' # Runs only when a version tag like v1.0.0 is pushed
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -14,10 +14,10 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🔧 Set up Flutter
+      - name: 🔧 Set up Flutter (latest stable)
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.8.1'
+          flutter-version: 'stable'
 
       - name: 📦 Install Dependencies
         run: flutter pub get
@@ -31,7 +31,7 @@ jobs:
       - name: 📦 Build Android App Bundle (AAB)
         run: flutter build appbundle --release
 
-      - name: 📤 Upload Release Assets
+      - name: 📤 Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.0
