@@ -25,26 +25,58 @@ jobs:
         with:
           channel: 'stable'
           
+      - name: 🔍 Debug repository structure
+        run: |
+          echo "=== Repository Structure ==="
+          ls -la
+          echo ""
+          echo "=== Looking for Flutter files ==="
+          find . -name "pubspec.yaml" -o -name "lib" -type d -o -name "android" -type d | head -10
+          echo ""
+          echo "=== Checking common Flutter directories ==="
+          for dir in . flutter_app app src VeL-MuSiC vel-music; do
+            if [ -d "$dir" ] && [ -f "$dir/pubspec.yaml" ]; then
+              echo "Found pubspec.yaml in: $dir"
+            fi
+          done
+      
       - name: 🔍 Find Flutter project directory
         id: find-flutter
         run: |
+          # Check root directory first
           if [ -f "pubspec.yaml" ]; then
             echo "FLUTTER_DIR=." >> $GITHUB_OUTPUT
             echo "Flutter project found in root directory"
+          # Check common subdirectories
           elif [ -f "flutter_app/pubspec.yaml" ]; then
             echo "FLUTTER_DIR=flutter_app" >> $GITHUB_OUTPUT
             echo "Flutter project found in flutter_app directory"
           elif [ -f "app/pubspec.yaml" ]; then
             echo "FLUTTER_DIR=app" >> $GITHUB_OUTPUT
             echo "Flutter project found in app directory"
+          elif [ -f "VeL-MuSiC/pubspec.yaml" ]; then
+            echo "FLUTTER_DIR=VeL-MuSiC" >> $GITHUB_OUTPUT
+            echo "Flutter project found in VeL-MuSiC directory"
+          elif [ -f "vel-music/pubspec.yaml" ]; then
+            echo "FLUTTER_DIR=vel-music" >> $GITHUB_OUTPUT
+            echo "Flutter project found in vel-music directory"
           else
-            # Search for pubspec.yaml in any subdirectory
-            FLUTTER_DIR=$(find . -name "pubspec.yaml" -type f | head -1 | xargs dirname)
-            if [ -n "$FLUTTER_DIR" ]; then
+            # Search for pubspec.yaml in any subdirectory (up to 2 levels deep)
+            FLUTTER_DIR=$(find . -maxdepth 2 -name "pubspec.yaml" -type f | head -1 | xargs dirname 2>/dev/null)
+            if [ -n "$FLUTTER_DIR" ] && [ "$FLUTTER_DIR" != "." ]; then
+              # Remove leading ./ if present
+              FLUTTER_DIR=${FLUTTER_DIR#./}
               echo "FLUTTER_DIR=$FLUTTER_DIR" >> $GITHUB_OUTPUT
               echo "Flutter project found in $FLUTTER_DIR directory"
+            elif [ -n "$FLUTTER_DIR" ] && [ "$FLUTTER_DIR" = "." ]; then
+              echo "FLUTTER_DIR=." >> $GITHUB_OUTPUT
+              echo "Flutter project found in root directory"
             else
-              echo "No Flutter project found!"
+              echo "ERROR: No Flutter project found!"
+              echo "Searched for pubspec.yaml in:"
+              echo "- Root directory"
+              echo "- Common subdirectories (flutter_app, app, VeL-MuSiC, vel-music)"
+              echo "- All subdirectories up to 2 levels deep"
               exit 1
             fi
           fi
@@ -54,12 +86,15 @@ jobs:
         run: flutter pub get
         
       - name: 🛠️ Build Universal APK
+        working-directory: ${{ steps.find-flutter.outputs.FLUTTER_DIR }}
         run: flutter build apk --release
         
       - name: 🛠️ Build Split APKs (per ABI)
+        working-directory: ${{ steps.find-flutter.outputs.FLUTTER_DIR }}
         run: flutter build apk --release --split-per-abi
         
       - name: 📦 Build Android App Bundle (AAB)
+        working-directory: ${{ steps.find-flutter.outputs.FLUTTER_DIR }}
         run: flutter build appbundle --release
         
       - name: 📤 Upload to GitHub Release
@@ -67,10 +102,10 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-            build/app/outputs/flutter-apk/app-x86_64-release.apk
-            build/app/outputs/bundle/release/app-release.aab
+            ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-release.apk
+            ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-x86_64-release.apk
+            ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/bundle/release/app-release.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
