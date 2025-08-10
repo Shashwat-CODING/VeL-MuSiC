@@ -18,6 +18,17 @@ class ColorExtractor {
       print('ColorExtractor: Found cached color: ${_colorCache[imageUrl]}');
       return _colorCache[imageUrl]!;
     }
+    
+    // For network images, always try to extract fresh colors
+    if (imageUrl.startsWith('http')) {
+      print('ColorExtractor: Network image detected, clearing cache to force refresh');
+      _colorCache.remove(imageUrl);
+    }
+    
+    // Add a small delay for network images to ensure they're loaded
+    if (imageUrl.startsWith('http')) {
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
 
     // Try multiple times with delay to ensure image is loaded
     for (int attempt = 1; attempt <= _maxRetries; attempt++) {
@@ -120,7 +131,7 @@ class ColorExtractor {
   }
 
   static Color _getDefaultAccentColor() {
-    return Colors.red;
+    return Colors.grey[600]!;
   }
 
   static void clearCache() {
@@ -129,6 +140,12 @@ class ColorExtractor {
 
   static void removeFromCache(String imageUrl) {
     _colorCache.remove(imageUrl);
+  }
+  
+  static Future<Color> forceExtractColor(String imageUrl) async {
+    print('ColorExtractor: Force extracting color for: $imageUrl');
+    _colorCache.remove(imageUrl);
+    return await extractDominantColor(imageUrl);
   }
 
   static void clearFailedExtractions() {

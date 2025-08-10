@@ -38,6 +38,11 @@ class UdioYTApp extends StatelessWidget {
       ],
       child: Consumer2<SettingsProvider, ThemeProvider>(
         builder: (context, settingsProvider, themeProvider, child) {
+          // Update ThemeProvider when settings change
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            themeProvider.updateSystemThemeMode(settingsProvider.themeMode);
+          });
+          
           return MaterialApp(
             title: 'VeL-MuSiC',
             themeMode: settingsProvider.themeMode,
@@ -46,6 +51,10 @@ class UdioYTApp extends StatelessWidget {
               colorScheme: ColorScheme.fromSeed(
                 seedColor: themeProvider.primaryColor,
                 brightness: Brightness.light,
+                surface: themeProvider.getSurfaceColor(),
+                background: themeProvider.getBackgroundColor(),
+                onBackground: themeProvider.getTextColor(),
+                onSurface: themeProvider.getTextColor(),
               ),
               useMaterial3: true,
               appBarTheme: AppBarTheme(
@@ -60,16 +69,27 @@ class UdioYTApp extends StatelessWidget {
                 ),
               ),
               cardTheme: CardThemeData(
-                color: themeProvider.accentColor.withOpacity(0.1),
+                color: themeProvider.getCardBackgroundColor(),
                 elevation: 2,
+                shadowColor: themeProvider.getShadowColor(),
               ),
-              scaffoldBackgroundColor: themeProvider.accentColor.withOpacity(0.05),
+              scaffoldBackgroundColor: themeProvider.getProminentBackgroundColor(),
+              dividerColor: themeProvider.getDividerColor(),
+              textTheme: TextTheme(
+                bodyLarge: TextStyle(color: themeProvider.getTextColor()),
+                bodyMedium: TextStyle(color: themeProvider.getTextColor()),
+                bodySmall: TextStyle(color: themeProvider.getSecondaryTextColor()),
+              ),
             ),
             darkTheme: ThemeData(
               primaryColor: themeProvider.primaryColor,
               colorScheme: ColorScheme.fromSeed(
                 seedColor: themeProvider.primaryColor,
                 brightness: Brightness.dark,
+                surface: themeProvider.getSurfaceColor(),
+                background: themeProvider.getBackgroundColor(),
+                onBackground: themeProvider.getTextColor(),
+                onSurface: themeProvider.getTextColor(),
               ),
               useMaterial3: true,
               appBarTheme: AppBarTheme(
@@ -84,10 +104,17 @@ class UdioYTApp extends StatelessWidget {
                 ),
               ),
               cardTheme: CardThemeData(
-                color: themeProvider.accentColor.withOpacity(0.15),
+                color: themeProvider.getCardBackgroundColor(),
                 elevation: 2,
+                shadowColor: themeProvider.getShadowColor(),
               ),
-              scaffoldBackgroundColor: themeProvider.accentColor.withOpacity(0.08),
+              scaffoldBackgroundColor: themeProvider.getProminentBackgroundColor(),
+              dividerColor: themeProvider.getDividerColor(),
+              textTheme: TextTheme(
+                bodyLarge: TextStyle(color: themeProvider.getTextColor()),
+                bodyMedium: TextStyle(color: themeProvider.getTextColor()),
+                bodySmall: TextStyle(color: themeProvider.getSecondaryTextColor()),
+              ),
             ),
             home: const MainNavigationScreen(),
             debugShowCheckedModeBanner: false,

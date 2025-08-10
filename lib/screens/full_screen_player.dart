@@ -18,26 +18,18 @@ class FullScreenPlayer extends StatefulWidget {
 }
 
 class _FullScreenPlayerState extends State<FullScreenPlayer> {
-  bool _isShuffle = false;
-  bool _isRepeat = false;
-
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return Scaffold(
+          backgroundColor: Colors.transparent,
           body: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  themeProvider.primaryColor.withOpacity(0.8),
-                  themeProvider.primaryColor.withOpacity(0.6),
-                  Theme.of(context).brightness == Brightness.dark
-                      ? Colors.black.withOpacity(0.9)
-                      : Colors.white.withOpacity(0.9),
-                ],
+                colors: themeProvider.getGradientColors(),
                 stops: const [0.0, 0.3, 1.0],
               ),
             ),
@@ -52,9 +44,7 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
                     child: Text(
                       'No track playing',
                       style: TextStyle(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black,
+                        color: themeProvider.getTextColor(),
                       ),
                     ),
                   );
@@ -64,11 +54,11 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
                   child: Column(
                     children: [
                       // App Bar
-                      _buildAppBar(context),
+                      _buildAppBar(context, themeProvider),
                       
                       // Album Art
                       Expanded(
-                        child: _buildAlbumArt(currentVideo, musicProvider),
+                        child: _buildAlbumArt(currentVideo, musicProvider, themeProvider),
                       ),
                       
                       // Controls
@@ -84,9 +74,8 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final iconColor = isDark ? Colors.white : Colors.black;
+  Widget _buildAppBar(BuildContext context, ThemeProvider themeProvider) {
+    final iconColor = themeProvider.getTextColor();
     
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -118,54 +107,36 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
     );
   }
 
-  Widget _buildAlbumArt(Video? video, MusicProvider musicProvider) {
-    // Determine aspect ratio based on content type
-    final double aspectRatio = _getAspectRatio(video, musicProvider);
-    
+  Widget _buildAlbumArt(Video? video, MusicProvider musicProvider, ThemeProvider themeProvider) {
     return Container(
       margin: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: context.watch<ThemeProvider>().accentColor.withOpacity(0.3),
-            blurRadius: 10,
-            spreadRadius: 5,
+      child: Center(
+        child: Container(
+          width: 320,
+          height: 180, // 16:9 ratio (320/180 = 1.78)
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: themeProvider.accentColor.withOpacity(0.3),
+                blurRadius: 10,
+                spreadRadius: 5,
+              ),
+            ],
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: AspectRatio(
-          aspectRatio: aspectRatio,
-          child: _buildThumbnailImage(video, musicProvider),
+          child: _buildThumbnailImage(video, musicProvider, themeProvider),
         ),
       ),
     );
   }
 
-  double _getAspectRatio(Video? video, MusicProvider musicProvider) {
-    // If it's a video, use 16:9 aspect ratio
-    if (video != null) {
-      return 16.0 / 9.0;
-    }
-    
-    // If it's a local track or downloaded track, use 1:1 aspect ratio for music
-    if (musicProvider.isPlayingLocalTrack || widget.downloadedTrack != null) {
-      return 16.0 / 9.0;
-    }
-    
-    // Default to 1:1 for music thumbnails
-    return 1.0;
-  }
-
-  Widget _buildThumbnailImage(Video? video, MusicProvider musicProvider) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final fallbackBgColor = isDark ? Colors.grey[800] : Colors.grey[300];
-    final fallbackIconColor = isDark ? Colors.white : Colors.black;
+  Widget _buildThumbnailImage(Video? video, MusicProvider musicProvider, ThemeProvider themeProvider) {
+    final fallbackBgColor = themeProvider.getSurfaceColor();
+    final fallbackIconColor = themeProvider.getTextColor();
     
     Widget buildFallbackContainer() {
       return Container(
+        width: double.infinity,
+        height: 250,
         color: fallbackBgColor,
         child: Icon(
           Icons.music_note,
@@ -178,7 +149,9 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
     if (video != null) {
       return Image.network(
         video.thumbnail,
-        fit: BoxFit.fill,
+        width: double.infinity,
+        height: 250,
+        fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => buildFallbackContainer(),
       );
     } else if (musicProvider.isPlayingLocalTrack) {
@@ -186,7 +159,9 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
       if (thumbnailPath != null && !thumbnailPath.startsWith('http')) {
         return Image.file(
           io.File(thumbnailPath),
-          fit: BoxFit.fill,
+          width: double.infinity,
+          height: 250,
+          fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) => buildFallbackContainer(),
         );
       }
@@ -195,7 +170,9 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
       if (!thumbnailPath.startsWith('http')) {
         return Image.file(
           io.File(thumbnailPath),
-          fit: BoxFit.fill,
+          width: double.infinity,
+          height: 250,
+          fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) => buildFallbackContainer(),
         );
       }
@@ -219,7 +196,7 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
           
           const SizedBox(height: 24),
           
-          // Main Controls
+          // Main Controls with Skip Buttons
           _buildMainControls(musicProvider),
           
           const SizedBox(height: 24),
@@ -232,200 +209,252 @@ class _FullScreenPlayerState extends State<FullScreenPlayer> {
   }
 
   Widget _buildSongInfo(MusicProvider musicProvider) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final titleColor = isDark ? Colors.white : Colors.black;
-    final subtitleColor = isDark ? Colors.grey[400] : Colors.grey[600];
-    
-    String title = 'Unknown Track';
-    String author = 'Unknown Artist';
-    
-    if (musicProvider.currentVideo != null) {
-      title = musicProvider.currentVideo!.title;
-      author = musicProvider.currentVideo!.author;
-    } else if (musicProvider.isPlayingLocalTrack) {
-      title = musicProvider.currentLocalTrackTitle ?? 'Unknown Track';
-      author = musicProvider.currentLocalTrackAuthor ?? 'Unknown Artist';
-    } else if (widget.downloadedTrack != null) {
-      title = widget.downloadedTrack!.title;
-      author = widget.downloadedTrack!.author;
-    }
-    
-    return Column(
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: titleColor,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          author,
-          style: TextStyle(
-            color: subtitleColor,
-            fontSize: 16,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final titleColor = themeProvider.getTextColor();
+        final subtitleColor = themeProvider.getSecondaryTextColor();
+        
+        String title = 'Unknown Track';
+        String author = 'Unknown Artist';
+        
+        if (musicProvider.currentVideo != null) {
+          title = musicProvider.currentVideo!.title;
+          author = musicProvider.currentVideo!.author;
+        } else if (musicProvider.isPlayingLocalTrack) {
+          title = musicProvider.currentLocalTrackTitle ?? 'Unknown Track';
+          author = musicProvider.currentLocalTrackAuthor ?? 'Unknown Artist';
+        } else if (widget.downloadedTrack != null) {
+          title = widget.downloadedTrack!.title;
+          author = widget.downloadedTrack!.author;
+        }
+        
+        return Column(
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                color: titleColor,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              author,
+              style: TextStyle(
+                color: subtitleColor,
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildProgressBar(MusicProvider musicProvider) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final timeColor = isDark ? Colors.grey[400] : Colors.grey[600];
-    final inactiveSliderColor = isDark ? Colors.grey[600] : Colors.grey[400];
-    
-    final position = musicProvider.position;
-    final duration = musicProvider.duration;
-    
-    return Column(
-      children: [
-        Slider(
-          value: duration.inMilliseconds > 0 
-              ? position.inMilliseconds / duration.inMilliseconds 
-              : 0.0,
-          onChanged: (value) {
-            final newPosition = Duration(
-              milliseconds: (value * duration.inMilliseconds).round(),
-            );
-            musicProvider.seekTo(newPosition);
-          },
-          activeColor: context.watch<ThemeProvider>().accentColor,
-          inactiveColor: inactiveSliderColor,
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                _formatDuration(position),
-                style: TextStyle(color: timeColor),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final timeColor = themeProvider.getSecondaryTextColor();
+        final inactiveSliderColor = themeProvider.getShimmerBaseColor();
+        
+        final position = musicProvider.position;
+        final duration = musicProvider.duration;
+        
+        return Column(
+          children: [
+            Slider(
+              value: duration.inMilliseconds > 0 
+                  ? position.inMilliseconds / duration.inMilliseconds 
+                  : 0.0,
+              onChanged: (value) {
+                final newPosition = Duration(
+                  milliseconds: (value * duration.inMilliseconds).round(),
+                );
+                musicProvider.seekTo(newPosition);
+              },
+              activeColor: themeProvider.accentColor,
+              inactiveColor: inactiveSliderColor,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _formatDuration(position),
+                    style: TextStyle(color: timeColor),
+                  ),
+                  Text(
+                    _formatDuration(duration),
+                    style: TextStyle(color: timeColor),
+                  ),
+                ],
               ),
-              Text(
-                _formatDuration(duration),
-                style: TextStyle(color: timeColor),
-              ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 
+
+
   Widget _buildMainControls(MusicProvider musicProvider) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final iconColor = isDark ? Colors.white : Colors.black;
-    
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        IconButton(
-          onPressed: () {
-            // TODO: Previous track
-          },
-          icon: Icon(Icons.skip_previous, color: iconColor, size: 40),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            color: context.watch<ThemeProvider>().accentColor,
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: IconButton(
-            onPressed: () {
-              if (musicProvider.isPlaying) {
-                musicProvider.pause();
-              } else {
-                musicProvider.play();
-              }
-            },
-            icon: Icon(
-              musicProvider.isPlaying ? Icons.pause : Icons.play_arrow,
-              color: Colors.white,
-              size: 50,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final iconColor = themeProvider.getTextColor();
+        
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            // 10 Second Back Button
+            IconButton(
+              onPressed: () {
+                final newPosition = musicProvider.position - const Duration(seconds: 10);
+                if (newPosition.inMilliseconds >= 0) {
+                  musicProvider.seekTo(newPosition);
+                }
+              },
+              icon: Icon(Icons.replay_10, color: iconColor, size: 32),
             ),
-          ),
-        ),
-        IconButton(
-          onPressed: () {
-            // TODO: Next track
-          },
-          icon: Icon(Icons.skip_next, color: iconColor, size: 40),
-        ),
-      ],
+            
+            // Play/Pause Button
+            Container(
+              decoration: BoxDecoration(
+                color: themeProvider.accentColor,
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: IconButton(
+                onPressed: () {
+                  if (musicProvider.isPlaying) {
+                    musicProvider.pause();
+                  } else {
+                    musicProvider.play();
+                  }
+                },
+                icon: Icon(
+                  musicProvider.isPlaying ? Icons.pause : Icons.play_arrow,
+                  color: Colors.white,
+                  size: 50,
+                ),
+              ),
+            ),
+            
+            // 10 Second Forward Button
+            IconButton(
+              onPressed: () {
+                final newPosition = musicProvider.position + const Duration(seconds: 10);
+                if (newPosition.inMilliseconds <= musicProvider.duration.inMilliseconds) {
+                  musicProvider.seekTo(newPosition);
+                }
+              },
+              icon: Icon(Icons.forward_10, color: iconColor, size: 32),
+            ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildSecondaryControls(MusicProvider musicProvider) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final iconColor = isDark ? Colors.white : Colors.black;
-    
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        IconButton(
-          onPressed: () {
-            setState(() {
-              _isShuffle = !_isShuffle;
-            });
-          },
-          icon: Icon(
-            Icons.shuffle,
-            color: _isShuffle ? context.watch<ThemeProvider>().accentColor : iconColor,
-            size: 24,
-          ),
-        ),
-        IconButton(
-          onPressed: () {
-            // TODO: Add to favorites
-          },
-          icon: Icon(Icons.favorite_border, color: iconColor, size: 24),
-        ),
-        Consumer<DownloadProvider>(
-          builder: (context, downloadProvider, child) {
-            final currentVideo = musicProvider.currentVideo ?? widget.video;
-            if (currentVideo == null) return const SizedBox.shrink();
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final iconColor = themeProvider.getTextColor();
+        
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            // Repeat Button
+            Consumer<MusicProvider>(
+              builder: (context, musicProvider, child) {
+                return IconButton(
+                  onPressed: () {
+                    // Toggle repeat mode
+                    musicProvider.toggleRepeat();
+                  },
+                  icon: Icon(
+                    _getRepeatIcon(musicProvider.repeatMode),
+                    color: musicProvider.repeatMode != RepeatMode.none 
+                        ? themeProvider.accentColor 
+                        : iconColor,
+                    size: 24,
+                  ),
+                );
+              },
+            ),
             
-            final isDownloaded = downloadProvider.isDownloaded(currentVideo.id);
-            final isDownloading = downloadProvider.isDownloading(currentVideo.id);
+            // Download Button - Always visible
+            Consumer<DownloadProvider>(
+              builder: (context, downloadProvider, child) {
+                final currentVideo = musicProvider.currentVideo ?? widget.video;
+                if (currentVideo == null) return const SizedBox.shrink();
+                
+                final isDownloaded = downloadProvider.isDownloaded(currentVideo.id);
+                final isDownloading = downloadProvider.isDownloading(currentVideo.id);
+                
+                return IconButton(
+                  onPressed: isDownloading 
+                      ? null 
+                      : () {
+                          if (isDownloaded) {
+                            // Show already downloaded message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('${currentVideo.title} is already downloaded'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          } else {
+                            // Start download
+                            downloadProvider.startDownload(currentVideo, context);
+                          }
+                        },
+                  icon: Icon(
+                    isDownloaded ? Icons.download_done : Icons.download,
+                    color: isDownloaded ? Colors.green : iconColor,
+                    size: 24,
+                  ),
+                );
+              },
+            ),
             
-            return IconButton(
-              onPressed: isDownloaded || isDownloading 
-                  ? null 
-                  : () {
-                      downloadProvider.startDownload(currentVideo, context);
-                    },
-              icon: Icon(
-                isDownloaded ? Icons.download_done : Icons.download,
-                color: isDownloaded ? Colors.green : iconColor,
-                size: 24,
-              ),
-            );
-          },
-        ),
-        IconButton(
-          onPressed: () {
-            setState(() {
-              _isRepeat = !_isRepeat;
-            });
-          },
-          icon: Icon(
-            Icons.repeat,
-            color: _isRepeat ? context.watch<ThemeProvider>().accentColor : iconColor,
-            size: 24,
-          ),
-        ),
-      ],
+            // Shuffle Button
+            Consumer<MusicProvider>(
+              builder: (context, musicProvider, child) {
+                return IconButton(
+                  onPressed: () {
+                    // Toggle shuffle mode
+                    musicProvider.toggleShuffle();
+                  },
+                  icon: Icon(
+                    Icons.shuffle,
+                    color: musicProvider.isShuffling ? themeProvider.accentColor : iconColor,
+                    size: 24,
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
-
+  IconData _getRepeatIcon(RepeatMode repeatMode) {
+    switch (repeatMode) {
+      case RepeatMode.none:
+        return Icons.repeat;
+      case RepeatMode.all:
+        return Icons.repeat;
+      case RepeatMode.one:
+        return Icons.repeat_one;
+    }
+  }
 
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');

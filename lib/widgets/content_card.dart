@@ -109,16 +109,16 @@ class ContentCard extends StatelessWidget {
                   imageUrl: content.thumbnail,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
-                    color: Colors.grey[300],
+                    color: context.watch<ThemeProvider>().getPlaceholderColor(),
                     child: const Center(
                       child: CircularProgressIndicator(),
                     ),
                   ),
                   errorWidget: (context, url, error) => Container(
-                    color: Colors.grey[300],
+                    color: context.watch<ThemeProvider>().getPlaceholderColor(),
                     child: Icon(
                       _getContentIcon(),
-                      color: Colors.grey[600],
+                      color: context.watch<ThemeProvider>().getErrorIconColor(),
                     ),
                   ),
                 ),
@@ -185,7 +185,7 @@ class ContentCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.grey[600],
+                    color: context.watch<ThemeProvider>().getSecondaryTextColor(),
                     fontSize: 11,
                   ),
                 ),
@@ -193,7 +193,7 @@ class ContentCard extends StatelessWidget {
                 Text(
                   _getSubtitleText(),
                   style: TextStyle(
-                    color: Colors.grey[500],
+                    color: context.watch<ThemeProvider>().getTertiaryTextColor(),
                     fontSize: 10,
                   ),
                 ),
@@ -220,7 +220,7 @@ class ContentCard extends StatelessWidget {
                   width: double.infinity,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
-                    color: Colors.grey[300],
+                    color: context.watch<ThemeProvider>().getPlaceholderColor(),
                     child: const Center(
                       child: CircularProgressIndicator(),
                     ),
@@ -228,10 +228,10 @@ class ContentCard extends StatelessWidget {
                   errorWidget: (context, url, error) => FittedBox(
                     fit: BoxFit.cover,
                     child: Container(
-                      color: Colors.grey[300],
+                      color: context.watch<ThemeProvider>().getPlaceholderColor(),
                       child: Icon(
                         _getContentIcon(),
-                        color: Colors.grey[600],
+                        color: context.watch<ThemeProvider>().getErrorIconColor(),
                       ),
                     ),
                   ),
@@ -298,7 +298,7 @@ class ContentCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                  color: context.watch<ThemeProvider>().getSecondaryTextColor(),
                   fontSize: 12,
                 ),
               ),
@@ -306,7 +306,7 @@ class ContentCard extends StatelessWidget {
               Text(
                 _getSubtitleText(),
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                  color: context.watch<ThemeProvider>().getTertiaryTextColor(),
                   fontSize: 11,
                 ),
               ),

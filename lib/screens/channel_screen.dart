@@ -9,6 +9,7 @@ import '../services/piped_api.dart';
 import '../widgets/video_card.dart';
 import '../widgets/video_modal.dart';
 import '../widgets/mini_player.dart';
+import '../providers/theme_provider.dart';
 
 class ChannelScreen extends StatefulWidget {
   final Channel channel;
@@ -291,7 +292,7 @@ class _ChannelScreenState extends State<ChannelScreen> {
             Icon(
               Icons.error_outline,
               size: 64,
-              color: Colors.grey[400],
+              color: context.watch<ThemeProvider>().getErrorIconColor(),
             ),
             const SizedBox(height: 16),
             Text(
@@ -299,7 +300,7 @@ class _ChannelScreenState extends State<ChannelScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[600],
+                color: context.watch<ThemeProvider>().getErrorTitleColor(),
               ),
             ),
             const SizedBox(height: 8),
@@ -307,7 +308,7 @@ class _ChannelScreenState extends State<ChannelScreen> {
               _error,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.grey[500],
+                color: context.watch<ThemeProvider>().getErrorTextColor(),
               ),
             ),
             const SizedBox(height: 16),
@@ -328,7 +329,7 @@ class _ChannelScreenState extends State<ChannelScreen> {
             Icon(
               Icons.video_library,
               size: 64,
-              color: Colors.grey[400],
+              color: context.watch<ThemeProvider>().getErrorIconColor(),
             ),
             const SizedBox(height: 16),
             Text(
@@ -336,14 +337,14 @@ class _ChannelScreenState extends State<ChannelScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[600],
+                color: context.watch<ThemeProvider>().getErrorTitleColor(),
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'This channel doesn\'t have any videos yet',
               style: TextStyle(
-                color: Colors.grey[500],
+                color: context.watch<ThemeProvider>().getErrorTextColor(),
               ),
             ),
           ],

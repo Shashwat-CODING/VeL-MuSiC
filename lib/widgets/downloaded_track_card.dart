@@ -1,22 +1,21 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/downloaded_track.dart';
-import '../screens/full_screen_player.dart';
+
+import '../providers/theme_provider.dart';
+import 'package:provider/provider.dart';
 
 class DownloadedTrackCard extends StatelessWidget {
   final DownloadedTrack track;
   final VoidCallback? onTap;
   final VoidCallback? onDelete;
   final VoidCallback? onShare;
-  final VoidCallback? onOpenInFileManager;
-
   const DownloadedTrackCard({
     super.key,
     required this.track,
     this.onTap,
     this.onDelete,
     this.onShare,
-    this.onOpenInFileManager,
   });
 
   @override
@@ -29,7 +28,7 @@ class DownloadedTrackCard extends StatelessWidget {
           child: Container(
             width: 80,
             height: 45,
-            child: _buildThumbnailImage(track),
+            child: _buildThumbnailImage(context, track),
           ),
         ),
         title: Text(
@@ -46,7 +45,7 @@ class DownloadedTrackCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: Colors.grey[600],
+                color: context.watch<ThemeProvider>().getSecondaryTextColor(),
                 fontSize: 12,
               ),
             ),
@@ -56,13 +55,13 @@ class DownloadedTrackCard extends StatelessWidget {
                 Icon(
                   Icons.download_done,
                   size: 12,
-                  color: Colors.green[600],
+                  color: Colors.green,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   '${track.formattedDuration} • ${track.formattedFileSize}',
                   style: TextStyle(
-                    color: Colors.grey[500],
+                    color: context.watch<ThemeProvider>().getTertiaryTextColor(),
                     fontSize: 11,
                   ),
                 ),
@@ -83,24 +82,14 @@ class DownloadedTrackCard extends StatelessWidget {
                 ],
               ),
             ),
-            // Removed Share menu item
+
             PopupMenuItem(
-              value: 'file_manager',
-              child: Row(
-                children: [
-                  Icon(Icons.folder_open),
-                  SizedBox(width: 8),
-                  Text('Open in File Manager'),
-                ],
-              ),
-            ),
-            const PopupMenuItem(
               value: 'delete',
               child: Row(
                 children: [
-                  Icon(Icons.delete, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text('Delete', style: TextStyle(color: Colors.red)),
+                  Icon(Icons.delete, color: Colors.grey[600]!),
+                  const SizedBox(width: 8),
+                  Text('Delete', style: TextStyle(color: Colors.grey[600]!)),
                 ],
               ),
             ),
@@ -110,10 +99,7 @@ class DownloadedTrackCard extends StatelessWidget {
                 case 'play':
                   onTap?.call();
                   break;
-                // Share removed
-                case 'file_manager':
-                  onOpenInFileManager?.call();
-                  break;
+
                 case 'delete':
                   onDelete?.call();
                   break;
@@ -125,35 +111,44 @@ class DownloadedTrackCard extends StatelessWidget {
     );
   }
 
-  Widget _buildThumbnailImage(DownloadedTrack track) {
+  Widget _buildThumbnailImage(BuildContext context, DownloadedTrack track) {
     if (track.thumbnail.startsWith('http')) {
-      return Image.network(
-        track.thumbnail,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey[300],
-            child: const Icon(
-              Icons.music_note,
-              color: Colors.grey,
-            ),
-          );
-        },
+      // Network image - this should not happen for downloaded tracks
+      // Fallback to music icon
+      return Container(
+        color: context.watch<ThemeProvider>().getPlaceholderColor(),
+        child: Icon(
+          Icons.music_note,
+          color: context.watch<ThemeProvider>().getSecondaryTextColor(),
+        ),
       );
     } else {
-      return Image.file(
-        File(track.thumbnail),
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey[300],
-            child: const Icon(
-              Icons.music_note,
-              color: Colors.grey,
-            ),
-          );
-        },
-      );
+      // Local file image
+      final file = File(track.thumbnail);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: context.watch<ThemeProvider>().getPlaceholderColor(),
+              child: Icon(
+                Icons.music_note,
+                color: context.watch<ThemeProvider>().getSecondaryTextColor(),
+              ),
+            );
+          },
+        );
+      } else {
+        // File doesn't exist, show music icon
+        return Container(
+          color: context.watch<ThemeProvider>().getPlaceholderColor(),
+          child: Icon(
+            Icons.music_note,
+            color: context.watch<ThemeProvider>().getSecondaryTextColor(),
+          ),
+        );
+      }
     }
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import '../providers/music_provider.dart';
+import '../providers/theme_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -8,6 +10,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: context.watch<ThemeProvider>().getProminentBackgroundColor(),
       appBar: AppBar(
         title: const Text(
           'Settings',
@@ -23,25 +26,25 @@ class SettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             children: [
               // Theme Section
-              _buildSectionHeader('Appearance'),
+              _buildSectionHeader(context, 'Appearance'),
               _buildThemeSelector(context, settingsProvider),
               
               const SizedBox(height: 24),
               
               // Audio Section
-              _buildSectionHeader('Audio'),
+              _buildSectionHeader(context, 'Audio'),
               _buildAudioSettings(context, settingsProvider),
               
               const SizedBox(height: 24),
               
               // Download Section
-              _buildSectionHeader('Downloads'),
+              _buildSectionHeader(context, 'Downloads'),
               _buildDownloadSettings(context, settingsProvider),
               
               const SizedBox(height: 24),
               
               // About Section
-              _buildSectionHeader('About'),
+              _buildSectionHeader(context, 'About'),
               _buildAboutSection(context),
             ],
           );
@@ -50,15 +53,15 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Colors.grey,
+          color: context.watch<ThemeProvider>().getSecondaryTextColor(),
         ),
       ),
     );
@@ -180,9 +183,18 @@ class SettingsScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.storage),
             title: const Text('Download Location'),
-            subtitle: Text(settingsProvider.downloadLocation),
+            subtitle: const Text('Private app storage'),
             onTap: () {
               // TODO: Implement download location picker
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.security),
+            title: const Text('Privacy Protection'),
+            subtitle: const Text('Downloads are stored privately and won\'t appear in Files app'),
+            trailing: const Icon(Icons.check_circle, color: Colors.green),
+            onTap: () {
+              _showPrivacyInfoDialog(context);
             },
           ),
         ],
@@ -215,6 +227,49 @@ class SettingsScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showPrivacyInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.security, color: Colors.green),
+              SizedBox(width: 8),
+              Text('Privacy Protection'),
+            ],
+          ),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Your downloaded music is completely private and secure:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 12),
+              Text('• Files are stored in the app\'s private directory'),
+              Text('• Downloads won\'t appear in your device\'s Files app'),
+              Text('• Other apps cannot access your downloaded music'),
+              Text('• Your music library remains private and secure'),
+              SizedBox(height: 12),
+              Text(
+                'This ensures your personal music collection stays private and won\'t clutter your device\'s file system.',
+                style: TextStyle(fontStyle: FontStyle.italic),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Got it'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

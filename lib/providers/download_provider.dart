@@ -118,7 +118,7 @@ class DownloadProvider with ChangeNotifier {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Download failed: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.grey[600]!,
         ),
       );
       

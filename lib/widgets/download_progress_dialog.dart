@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/theme_provider.dart';
 
 class DownloadProgressDialog extends StatefulWidget {
   final String title;
@@ -104,7 +106,7 @@ class DownloadProgressDialogState extends State<DownloadProgressDialog> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.grey[800] : Colors.grey[50],
+                  color: context.watch<ThemeProvider>().getCardBackgroundColor(),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -113,12 +115,12 @@ class DownloadProgressDialogState extends State<DownloadProgressDialog> {
                       width: 50,
                       height: 50,
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.grey[700] : Colors.grey[300],
+                        color: context.watch<ThemeProvider>().getPlaceholderColor(),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
                         Icons.music_note,
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        color: context.watch<ThemeProvider>().getSecondaryTextColor(),
                       ),
                     ),
                     const SizedBox(width: 12),

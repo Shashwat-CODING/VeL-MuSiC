@@ -66,6 +66,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         ),
       ],
       child: Scaffold(
+        backgroundColor: context.watch<ThemeProvider>().getProminentBackgroundColor(),
         body: IndexedStack(
           index: _currentIndex,
           children: _screens,

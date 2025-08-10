@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-enum RepeatMode { none, one, all }
+import 'music_provider.dart';
 
 class SettingsProvider with ChangeNotifier {
   static const String _themeKey = 'theme_mode';

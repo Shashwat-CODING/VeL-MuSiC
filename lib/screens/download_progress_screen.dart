@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/download_provider.dart';
 import '../models/downloaded_track.dart';
+import '../screens/full_screen_player.dart';
+import '../providers/theme_provider.dart';
 
 class DownloadProgressScreen extends StatelessWidget {
   const DownloadProgressScreen({super.key});
@@ -28,7 +30,7 @@ class DownloadProgressScreen extends StatelessWidget {
                   Icon(
                     Icons.download,
                     size: 64,
-                    color: Colors.grey[400],
+                    color: context.watch<ThemeProvider>().getErrorIconColor(),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -36,14 +38,14 @@ class DownloadProgressScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey[600],
+                      color: context.watch<ThemeProvider>().getErrorTitleColor(),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Your downloads will appear here',
                     style: TextStyle(
-                      color: Colors.grey[500],
+                      color: context.watch<ThemeProvider>().getErrorTextColor(),
                     ),
                   ),
                 ],
@@ -68,7 +70,7 @@ class DownloadProgressScreen extends StatelessWidget {
                   Icon(
                     Icons.download,
                     size: 64,
-                    color: Colors.grey[400],
+                    color: context.watch<ThemeProvider>().getErrorIconColor(),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -76,14 +78,14 @@ class DownloadProgressScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey[600],
+                      color: context.watch<ThemeProvider>().getErrorTitleColor(),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Your downloads will appear here',
                     style: TextStyle(
-                      color: Colors.grey[500],
+                      color: context.watch<ThemeProvider>().getErrorTextColor(),
                     ),
                   ),
                 ],
@@ -133,7 +135,7 @@ class DownloadProgressScreen extends StatelessWidget {
             Text(
               track.author,
               style: TextStyle(
-                color: Colors.grey[600],
+                color: context.watch<ThemeProvider>().getSecondaryTextColor(),
                 fontSize: 12,
               ),
             ),
@@ -142,14 +144,14 @@ class DownloadProgressScreen extends StatelessWidget {
               children: [
                 Icon(
                   Icons.download_done,
-                  color: Colors.green[600],
+                  color: Colors.green,
                   size: 16,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   'Downloaded',
                   style: TextStyle(
-                    color: Colors.green[600],
+                    color: Colors.green,
                     fontSize: 11,
                   ),
                 ),
@@ -157,7 +159,7 @@ class DownloadProgressScreen extends StatelessWidget {
                 Text(
                   track.formattedFileSize,
                   style: TextStyle(
-                    color: Colors.grey[600],
+                    color: context.watch<ThemeProvider>().getSecondaryTextColor(),
                     fontSize: 11,
                   ),
                 ),

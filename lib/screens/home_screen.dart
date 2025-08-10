@@ -5,7 +5,7 @@ import '../providers/music_provider.dart';
 import '../providers/download_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/content_card.dart';
-import '../widgets/filter_selector.dart';
+
 import '../widgets/video_modal.dart';
 import '../screens/channel_screen.dart';
 import '../screens/search_screen.dart';
@@ -30,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: context.watch<ThemeProvider>().getProminentBackgroundColor(),
       appBar: AppBar(
         title: const Text(
           'VeL-MuSiC',
@@ -81,14 +82,14 @@ class _HomeScreenState extends State<HomeScreen> {
       itemCount: 6,
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
+          baseColor: context.watch<ThemeProvider>().getShimmerBaseColor(),
+          highlightColor: context.watch<ThemeProvider>().getShimmerHighlightColor(),
           child: Card(
             margin: const EdgeInsets.only(bottom: 16),
             child: Container(
               height: 200,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.watch<ThemeProvider>().getCardBackgroundColor(),
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
@@ -106,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Icon(
             Icons.error_outline,
             size: 64,
-            color: Colors.grey[400],
+            color: context.watch<ThemeProvider>().getErrorIconColor(),
           ),
           const SizedBox(height: 16),
           Text(
@@ -114,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
+              color: context.watch<ThemeProvider>().getErrorTitleColor(),
             ),
           ),
           const SizedBox(height: 8),
@@ -122,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
             error,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.grey[500],
+              color: context.watch<ThemeProvider>().getErrorTextColor(),
             ),
           ),
           const SizedBox(height: 16),
@@ -145,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Icon(
             Icons.music_note,
             size: 64,
-            color: Colors.grey[400],
+            color: context.watch<ThemeProvider>().getErrorIconColor(),
           ),
           const SizedBox(height: 16),
           Text(
@@ -153,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
+              color: context.watch<ThemeProvider>().getErrorTitleColor(),
             ),
           ),
           const SizedBox(height: 8),
@@ -161,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
             'No trending content available at the moment',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.grey[500],
+              color: context.watch<ThemeProvider>().getErrorTextColor(),
             ),
           ),
         ],

@@ -11,9 +11,7 @@ import '../widgets/filter_selector.dart';
 import '../widgets/video_modal.dart';
 import '../widgets/mini_player.dart';
 import '../screens/channel_screen.dart';
-import '../screens/home_screen.dart';
-import '../screens/library_screen.dart';
-import '../screens/settings_screen.dart';
+
 import '../models/content_item.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -171,7 +169,7 @@ class _SearchScreenState extends State<SearchScreen> {
           Icon(
             Icons.search,
             size: 64,
-            color: Colors.grey[400],
+            color: context.watch<ThemeProvider>().getErrorIconColor(),
           ),
           const SizedBox(height: 16),
           Text(
@@ -179,7 +177,7 @@ class _SearchScreenState extends State<SearchScreen> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
+              color: context.watch<ThemeProvider>().getErrorTitleColor(),
             ),
           ),
           const SizedBox(height: 8),
@@ -187,7 +185,7 @@ class _SearchScreenState extends State<SearchScreen> {
             'Find your favorite songs, artists, and playlists',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.grey[500],
+              color: context.watch<ThemeProvider>().getErrorTextColor(),
             ),
           ),
         ],
@@ -201,14 +199,14 @@ class _SearchScreenState extends State<SearchScreen> {
       itemCount: 6,
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
+          baseColor: context.watch<ThemeProvider>().getShimmerBaseColor(),
+          highlightColor: context.watch<ThemeProvider>().getShimmerHighlightColor(),
           child: Card(
             margin: const EdgeInsets.only(bottom: 16),
             child: Container(
               height: 200,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.watch<ThemeProvider>().getCardBackgroundColor(),
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
@@ -226,7 +224,7 @@ class _SearchScreenState extends State<SearchScreen> {
           Icon(
             Icons.error_outline,
             size: 64,
-            color: Colors.grey[400],
+            color: context.watch<ThemeProvider>().getErrorIconColor(),
           ),
           const SizedBox(height: 16),
           Text(
@@ -234,7 +232,7 @@ class _SearchScreenState extends State<SearchScreen> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
+              color: context.watch<ThemeProvider>().getErrorTitleColor(),
             ),
           ),
           const SizedBox(height: 8),
@@ -242,7 +240,7 @@ class _SearchScreenState extends State<SearchScreen> {
             error,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.grey[500],
+              color: context.watch<ThemeProvider>().getErrorTextColor(),
             ),
           ),
           const SizedBox(height: 16),
@@ -268,7 +266,7 @@ class _SearchScreenState extends State<SearchScreen> {
           Icon(
             Icons.music_note,
             size: 64,
-            color: Colors.grey[400],
+            color: context.watch<ThemeProvider>().getErrorIconColor(),
           ),
           const SizedBox(height: 16),
           Text(
@@ -276,7 +274,7 @@ class _SearchScreenState extends State<SearchScreen> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
+              color: context.watch<ThemeProvider>().getErrorTitleColor(),
             ),
           ),
           const SizedBox(height: 8),
@@ -284,7 +282,7 @@ class _SearchScreenState extends State<SearchScreen> {
             'Try searching for something else or change the filter',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.grey[500],
+              color: context.watch<ThemeProvider>().getErrorTextColor(),
             ),
           ),
         ],

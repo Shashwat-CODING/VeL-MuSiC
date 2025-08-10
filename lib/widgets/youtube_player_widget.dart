@@ -35,10 +35,10 @@ class YouTubePlayerWidget extends StatelessWidget {
             child: YoutubePlayer(
               controller: controller,
               showVideoProgressIndicator: true,
-              progressIndicatorColor: Colors.red,
-              progressColors: const ProgressBarColors(
-                playedColor: Colors.red,
-                handleColor: Colors.redAccent,
+              progressIndicatorColor: Colors.grey[600]!,
+              progressColors: ProgressBarColors(
+                playedColor: Colors.grey[600]!,
+                handleColor: Colors.grey[400]!,
               ),
               onReady: () {
                 print('YouTube player is ready');

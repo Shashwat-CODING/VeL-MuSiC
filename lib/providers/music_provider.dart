@@ -6,6 +6,13 @@ import '../services/piped_api.dart';
 import '../services/audio_player_service.dart';
 import '../providers/theme_provider.dart';
 
+// Add RepeatMode enum
+enum RepeatMode {
+  none,
+  all,
+  one,
+}
+
 class MusicProvider with ChangeNotifier {
   final PipedApiService _apiService = PipedApiService();
   final AudioPlayerService _audioService = AudioPlayerService();
@@ -26,6 +33,10 @@ class MusicProvider with ChangeNotifier {
   String _searchQuery = '';
   String _currentFilter = 'all';
   String _currentTrendingFilter = 'music';
+  
+  // Add repeat and shuffle properties
+  RepeatMode _repeatMode = RepeatMode.none;
+  bool _isShuffling = false;
 
   List<Video> get trendingVideos => _trendingVideos;
   List<ContentItem> get searchResults => _searchResults;
@@ -38,6 +49,10 @@ class MusicProvider with ChangeNotifier {
   bool get isPlaying => _audioService.isPlaying;
   Duration get position => _audioService.position;
   Duration get duration => _audioService.duration;
+  
+  // Add repeat and shuffle getters
+  RepeatMode get repeatMode => _repeatMode;
+  bool get isShuffling => _isShuffling;
   
   // Local track getters
   String? get currentLocalTrackId => _audioService.currentLocalTrackId;
@@ -52,6 +67,37 @@ class MusicProvider with ChangeNotifier {
   // Get available filters
   Map<String, String> get searchFilters => PipedApiService.searchFilters;
   Map<String, String> get trendingFilters => PipedApiService.trendingFilters;
+
+  // Add repeat and shuffle methods
+  void toggleRepeat() {
+    switch (_repeatMode) {
+      case RepeatMode.none:
+        _repeatMode = RepeatMode.all;
+        break;
+      case RepeatMode.all:
+        _repeatMode = RepeatMode.one;
+        break;
+      case RepeatMode.one:
+        _repeatMode = RepeatMode.none;
+        break;
+    }
+    notifyListeners();
+  }
+
+  void toggleShuffle() {
+    _isShuffling = !_isShuffling;
+    notifyListeners();
+  }
+
+  void setRepeatMode(RepeatMode mode) {
+    _repeatMode = mode;
+    notifyListeners();
+  }
+
+  void setShuffle(bool shuffle) {
+    _isShuffling = shuffle;
+    notifyListeners();
+  }
 
   Future<void> loadTrendingMusic({String filter = 'music'}) async {
     _setLoading(true);
@@ -102,23 +148,7 @@ class MusicProvider with ChangeNotifier {
       _clearError();
       await _audioService.playVideo(video);
       
-      // Update theme color based on thumbnail
       print('Playing video: ${video.title}');
-      print('Thumbnail URL: ${video.thumbnail}');
-      print('Theme provider is null: ${_themeProvider == null}');
-      
-      if (_themeProvider != null && video.thumbnail.isNotEmpty) {
-        print('Updating accent color from thumbnail...');
-        
-        // Add a small delay to ensure the audio starts playing first
-        await Future.delayed(const Duration(milliseconds: 100));
-        
-        await _themeProvider!.updateAccentColorFromThumbnail(video.thumbnail);
-        print('Accent color updated to: ${_themeProvider!.accentColor}');
-      } else {
-        print('Theme provider is null or thumbnail is empty, cannot update accent color');
-      }
-      
       notifyListeners();
     } catch (e) {
       _setError('Failed to play audio: ${e.toString()}');
@@ -129,20 +159,6 @@ class MusicProvider with ChangeNotifier {
     try {
       _clearError();
       await _audioService.playLocalFile(filePath, title, author, thumbnailPath);
-      
-      // Update theme color based on local thumbnail if available
-      if (_themeProvider != null && thumbnailPath != null && thumbnailPath.isNotEmpty) {
-        print('Updating accent color from local thumbnail...');
-        
-        // Add a small delay to ensure the audio starts playing first
-        await Future.delayed(const Duration(milliseconds: 100));
-        
-        await _themeProvider!.updateAccentColorFromThumbnail(thumbnailPath);
-        print('Accent color updated to: ${_themeProvider!.accentColor}');
-      } else if (_themeProvider != null) {
-        print('No local thumbnail available, resetting to default color');
-        _themeProvider!.resetToDefaultColor();
-      }
       
       notifyListeners();
     } catch (e) {
@@ -203,36 +219,7 @@ class MusicProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Add method to manually refresh theme from current track
-  Future<void> refreshThemeFromCurrentTrack() async {
-    if (_themeProvider == null) {
-      print('MusicProvider: Theme provider is null, cannot refresh theme');
-      return;
-    }
 
-    try {
-      if (currentVideo != null && currentVideo!.thumbnail.isNotEmpty) {
-        print('MusicProvider: Refreshing theme from current video thumbnail');
-        await _themeProvider!.forceUpdateFromThumbnail(currentVideo!.thumbnail);
-      } else if (isPlayingLocalTrack && currentLocalTrackThumbnail != null) {
-        print('MusicProvider: Refreshing theme from current local track thumbnail');
-        await _themeProvider!.forceUpdateFromThumbnail(currentLocalTrackThumbnail!);
-      } else {
-        print('MusicProvider: No current track with thumbnail, resetting theme');
-        _themeProvider!.resetToDefaultColor();
-      }
-    } catch (e) {
-      print('MusicProvider: Error refreshing theme: $e');
-    }
-  }
-
-  // Add method to clear theme cache
-  void clearThemeCache() {
-    if (_themeProvider != null) {
-      _themeProvider!.clearCache();
-      _themeProvider!.clearFailedExtractions();
-    }
-  }
 
   @override
   void dispose() {

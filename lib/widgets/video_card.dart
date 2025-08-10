@@ -108,14 +108,17 @@ class VideoCard extends StatelessWidget {
                   imageUrl: video.thumbnail,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
-                    color: Colors.grey[300],
+                    color: context.watch<ThemeProvider>().getPlaceholderColor(),
                     child: const Center(
                       child: CircularProgressIndicator(),
                     ),
                   ),
                   errorWidget: (context, url, error) => Container(
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.music_note),
+                    color: context.watch<ThemeProvider>().getPlaceholderColor(),
+                    child: Icon(
+                      Icons.music_note,
+                      color: context.watch<ThemeProvider>().getSecondaryTextColor(),
+                    ),
                   ),
                 ),
               ),
@@ -180,7 +183,7 @@ class VideoCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.grey[600],
+                    color: context.watch<ThemeProvider>().getSecondaryTextColor(),
                     fontSize: 11,
                   ),
                 ),
@@ -188,7 +191,7 @@ class VideoCard extends StatelessWidget {
                 Text(
                   '${video.formattedViewCount} views',
                   style: TextStyle(
-                    color: Colors.grey[500],
+                    color: context.watch<ThemeProvider>().getTertiaryTextColor(),
                     fontSize: 10,
                   ),
                 ),

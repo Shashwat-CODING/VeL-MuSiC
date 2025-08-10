@@ -61,7 +61,7 @@ class MiniPlayer extends StatelessWidget {
                   value: duration.inMilliseconds > 0 
                       ? position.inMilliseconds / duration.inMilliseconds 
                       : 0.0,
-                  backgroundColor: Colors.grey[300],
+                  backgroundColor: context.watch<ThemeProvider>().getShimmerBaseColor(),
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   minHeight: 2,
                 ),
@@ -78,7 +78,7 @@ class MiniPlayer extends StatelessWidget {
                           child: Container(
                             width: 80,
                             height: 45,
-                            child: _buildThumbnailImage(currentVideo, musicProvider),
+                            child: _buildThumbnailImage(context, currentVideo, musicProvider),
                           ),
                         ),
                         
@@ -172,14 +172,14 @@ class MiniPlayer extends StatelessWidget {
     );
   }
 
-  Widget _buildThumbnailImage(Video? currentVideo, MusicProvider musicProvider) {
+  Widget _buildThumbnailImage(BuildContext context, Video? currentVideo, MusicProvider musicProvider) {
     if (currentVideo != null) {
       return Image.network(
         currentVideo.thumbnail,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           return Container(
-            color: Colors.grey[800],
+            color: context.watch<ThemeProvider>().getShimmerBaseColor(),
             child: const Icon(
               Icons.music_note,
               color: Colors.white,
@@ -196,7 +196,7 @@ class MiniPlayer extends StatelessWidget {
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             return Container(
-              color: Colors.grey[800],
+              color: context.watch<ThemeProvider>().getShimmerBaseColor(),
               child: const Icon(
                 Icons.music_note,
                 color: Colors.white,
@@ -209,7 +209,7 @@ class MiniPlayer extends StatelessWidget {
     }
     
     return Container(
-      color: Colors.grey[800],
+      color: context.watch<ThemeProvider>().getShimmerBaseColor(),
       child: const Icon(
         Icons.music_note,
         color: Colors.white,

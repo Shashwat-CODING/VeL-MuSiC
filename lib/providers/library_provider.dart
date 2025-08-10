@@ -10,21 +10,90 @@ class LibraryProvider with ChangeNotifier {
   final DownloadService _downloadService = DownloadService();
   final AudioPlayerService _audioService = AudioPlayerService();
   MusicProvider? _musicProvider;
+  
+  LibraryProvider() {
+    _setupDownloadCallbacks();
+  }
+  
+  void _setupDownloadCallbacks() {
+    _downloadService.onDownloadComplete = (DownloadedTrack track) {
+      // Add the new track to the list and notify UI
+      _downloadedTracks.add(track);
+      _isDownloading = false;
+      notifyListeners();
+      print('Download completed: ${track.title} - UI updated automatically');
+    };
+    
+    _downloadService.onDownloadFailed = (String videoId) {
+      _isDownloading = false;
+      notifyListeners();
+      print('Download failed for video: $videoId');
+      // Optionally show error notification or update UI
+    };
+  }
 
   List<DownloadedTrack> _downloadedTracks = [];
   List<Playlist> _playlists = [];
   List<Video> _favoriteTracks = [];
   bool _isLoading = false;
+  bool _isDownloading = false;
+  
+  // Track download progress for individual videos
+  final Map<String, double> _downloadProgress = {};
+  final Map<String, String> _downloadStatus = {};
 
   List<DownloadedTrack> get downloadedTracks => _downloadedTracks;
   List<Playlist> get playlists => _playlists;
   List<Video> get favoriteTracks => _favoriteTracks;
   bool get isLoading => _isLoading;
+  bool get isDownloading => _isDownloading;
+  
+  // Get download progress for a specific video
+  double getDownloadProgress(String videoId) => _downloadProgress[videoId] ?? 0.0;
+  
+  // Get download status for a specific video
+  String getDownloadStatus(String videoId) => _downloadStatus[videoId] ?? '';
+  
+  // Get all download progress
+  Map<String, double> get downloadProgress => Map.unmodifiable(_downloadProgress);
+  
+  // Get download info for a specific video
+  Map<String, dynamic>? getDownloadInfo(String videoId) {
+    if (_downloadProgress.containsKey(videoId)) {
+      return {
+        'progress': _downloadProgress[videoId] ?? 0.0,
+        'status': _downloadStatus[videoId] ?? '',
+        'isActive': true,
+      };
+    }
+    return null;
+  }
+  
+  // Get download progress from service for a specific video
+  Map<String, dynamic>? getServiceDownloadProgress(String videoId) {
+    return _downloadService.getDownloadProgress(videoId);
+  }
+  
+  // Check if a specific video is being downloaded
+  bool isVideoDownloading(String videoId) => _downloadProgress.containsKey(videoId);
+  
+  // Get total number of active downloads
+  int get activeDownloadCount => _downloadProgress.length;
+  
+  // Get max concurrent downloads
+  int get maxConcurrentDownloads => _downloadService.maxConcurrentDownloads;
 
   Future<void> loadDownloads() async {
     _setLoading(true);
     try {
       _downloadedTracks = await _downloadService.getDownloadedTracks();
+      
+      // Fix existing thumbnails for tracks that still have network URLs
+      await _downloadService.fixExistingThumbnails();
+      
+      // Reload tracks after fixing thumbnails
+      _downloadedTracks = await _downloadService.getDownloadedTracks();
+      
       notifyListeners();
     } catch (e) {
       print('Error loading downloads: $e');
@@ -33,17 +102,43 @@ class LibraryProvider with ChangeNotifier {
     }
   }
 
-  // Method to refresh downloads (called when new downloads complete)
+  // Method to manually fix thumbnails for existing downloads
+  Future<void> fixThumbnails() async {
+    try {
+      await _downloadService.fixExistingThumbnails();
+      await loadDownloads(); // Reload to get updated tracks
+    } catch (e) {
+      print('Error fixing thumbnails: $e');
+    }
+  }
+  
+  // Method to refresh downloads
   Future<void> refreshDownloads() async {
-    await loadDownloads();
+    try {
+      await loadDownloads();
+    } catch (e) {
+      print('Error refreshing downloads: $e');
+    }
   }
 
   Future<void> downloadTrack(Video video) async {
     try {
-      final downloadedTrack = await _downloadService.downloadTrack(video, null);
-      _downloadedTracks.add(downloadedTrack);
+      _isDownloading = true;
+      _downloadProgress[video.id] = 0.0;
+      _downloadStatus[video.id] = 'Starting download...';
       notifyListeners();
+      
+      // Start the download with progress tracking
+      await _downloadService.downloadTrack(video, (progress, status) {
+        _downloadProgress[video.id] = progress;
+        _downloadStatus[video.id] = status;
+        notifyListeners();
+      });
     } catch (e) {
+      _isDownloading = false;
+      _downloadProgress.remove(video.id);
+      _downloadStatus.remove(video.id);
+      notifyListeners();
       print('Error downloading track: $e');
       rethrow;
     }
@@ -98,16 +193,7 @@ class LibraryProvider with ChangeNotifier {
     }
   }
 
-  Future<void> openInFileManager(DownloadedTrack track) async {
-    try {
-      // This would typically use a file manager plugin
-      // For now, we'll just print the file path
-      print('Opening in file manager: ${track.filePath}');
-      // TODO: Implement actual file manager opening
-    } catch (e) {
-      print('Error opening in file manager: $e');
-    }
-  }
+
 
   Future<void> addToFavorites(Video video) async {
     if (!_favoriteTracks.any((track) => track.id == video.id)) {
@@ -149,6 +235,79 @@ class LibraryProvider with ChangeNotifier {
   Future<void> deletePlaylist(String playlistId) async {
     _playlists.removeWhere((p) => p.id == playlistId);
     notifyListeners();
+  }
+
+  // Get comprehensive download queue status
+  Map<String, dynamic> getDownloadQueueStatus() {
+    return _downloadService.getDownloadQueueStatus();
+  }
+  
+  // Check if there are any active downloads
+  bool get hasActiveDownloads => _downloadService.activeDownloadCount > 0;
+  
+  // Resumable downloads configuration
+  bool get isResumableDownloadsEnabled => _downloadService.useResumableDownloads;
+  
+  void setResumableDownloads(bool value) {
+    _downloadService.setUseResumableDownloads(value);
+    notifyListeners();
+  }
+
+  // Cancel all active downloads
+  void cancelAllDownloads() {
+    _downloadService.cancelAllDownloads();
+    _isDownloading = false;
+    notifyListeners();
+  }
+  
+  // Clear all paused downloads
+  void clearPausedDownloads() {
+    _downloadService.clearPausedDownloads();
+    notifyListeners();
+  }
+
+  // Cancel a specific download
+  void cancelDownload(String videoId) {
+    _downloadService.cancelDownload(videoId);
+    _downloadProgress.remove(videoId);
+    _downloadStatus.remove(videoId);
+    
+    // Check if no more downloads are active
+    if (_downloadService.activeDownloadCount == 0) {
+      _isDownloading = false;
+    }
+    
+    notifyListeners();
+  }
+  
+  // Pause a specific download
+  void pauseDownload(String videoId) {
+    _downloadService.pauseDownload(videoId);
+    // Keep progress and status for resuming
+    notifyListeners();
+  }
+  
+  // Resume a paused download
+  Future<void> resumeDownload(String videoId, String url, String filePath) async {
+    try {
+      _isDownloading = true;
+      notifyListeners();
+      
+      await _downloadService.resumeDownload(
+        videoId,
+        url,
+        filePath,
+        (progress) {
+          _downloadProgress[videoId] = progress;
+          notifyListeners();
+        },
+      );
+    } catch (e) {
+      _isDownloading = false;
+      notifyListeners();
+      print('Error resuming download: $e');
+      rethrow;
+    }
   }
 
   void _setLoading(bool loading) {

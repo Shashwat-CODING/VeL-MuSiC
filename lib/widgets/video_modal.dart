@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import '../models/video.dart';
+import 'package:provider/provider.dart';
 import '../models/content_item.dart';
+import '../models/video.dart';
+import '../providers/music_provider.dart';
+import '../providers/download_provider.dart';
+import '../providers/theme_provider.dart';
 import '../screens/channel_screen.dart';
 
 class VideoModal extends StatelessWidget {
@@ -148,8 +152,12 @@ class VideoModal extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.music_note, size: 50),
+                      color: context.watch<ThemeProvider>().getPlaceholderColor(),
+                      child: Icon(
+                        Icons.music_note, 
+                        size: 50,
+                        color: context.watch<ThemeProvider>().getSecondaryTextColor(),
+                      ),
                     );
                   },
                 ),
@@ -177,7 +185,7 @@ class VideoModal extends StatelessWidget {
             'by ${_getAuthor()}',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: context.watch<ThemeProvider>().getSecondaryTextColor(),
             ),
           ),
           
@@ -195,7 +203,7 @@ class VideoModal extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+                color: context.watch<ThemeProvider>().getErrorTitleColor(),
               ),
             ),
             const SizedBox(height: 8),
@@ -203,7 +211,7 @@ class VideoModal extends StatelessWidget {
               _getDescription(),
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: context.watch<ThemeProvider>().getSecondaryTextColor(),
               ),
               maxLines: 5,
               overflow: TextOverflow.ellipsis,
@@ -241,8 +249,12 @@ class VideoModal extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.music_note, size: 50),
+                    color: context.watch<ThemeProvider>().getPlaceholderColor(),
+                    child: Icon(
+                      Icons.music_note, 
+                      size: 50,
+                      color: context.watch<ThemeProvider>().getSecondaryTextColor(),
+                    ),
                   );
                 },
               ),
@@ -274,7 +286,7 @@ class VideoModal extends StatelessWidget {
                   'by ${_getAuthor()}',
                   style: TextStyle(
                     fontSize: 18,
-                    color: Colors.grey[600],
+                    color: context.watch<ThemeProvider>().getSecondaryTextColor(),
                   ),
                 ),
                 
@@ -292,7 +304,7 @@ class VideoModal extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey[800],
+                      color: context.watch<ThemeProvider>().getErrorTitleColor(),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -300,7 +312,7 @@ class VideoModal extends StatelessWidget {
                     _getDescription(),
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey[600],
+                      color: context.watch<ThemeProvider>().getSecondaryTextColor(),
                     ),
                     maxLines: 6,
                     overflow: TextOverflow.ellipsis,
@@ -318,9 +330,9 @@ class VideoModal extends StatelessWidget {
     if (_video != null) {
       return Column(
         children: [
-          _buildDetailRow('Duration', _formatDuration(_video!.lengthSeconds)),
-          _buildDetailRow('Views', _formatViews(_video!.viewCount)),
-          _buildDetailRow('Published', _video!.publishedText),
+          _buildDetailRow(context, 'Duration', _formatDuration(_video!.lengthSeconds)),
+          _buildDetailRow(context, 'Views', _formatViews(_video!.viewCount)),
+          _buildDetailRow(context, 'Published', _video!.publishedText),
         ],
       );
     } else if (_contentItem != null) {
@@ -329,19 +341,19 @@ class VideoModal extends StatelessWidget {
           final channel = _contentItem!.channel!;
           return Column(
             children: [
-              _buildDetailRow('Subscribers', channel.formattedSubscriberCount),
-              _buildDetailRow('Videos', channel.formattedVideoCount),
+              _buildDetailRow(context, 'Subscribers', channel.formattedSubscriberCount),
+              _buildDetailRow(context, 'Videos', channel.formattedVideoCount),
               if (channel.location != null)
-                _buildDetailRow('Location', channel.location!),
+                _buildDetailRow(context, 'Location', channel.location!),
             ],
           );
         case ContentType.playlist:
           final playlist = _contentItem!.playlist!;
           return Column(
             children: [
-              _buildDetailRow('Videos', playlist.formattedVideoCount),
-              _buildDetailRow('Views', playlist.formattedViewCount),
-              _buildDetailRow('Uploader', playlist.uploaderName),
+              _buildDetailRow(context, 'Videos', playlist.formattedVideoCount),
+              _buildDetailRow(context, 'Views', playlist.formattedViewCount),
+              _buildDetailRow(context, 'Uploader', playlist.uploaderName),
             ],
           );
         default:
@@ -351,7 +363,7 @@ class VideoModal extends StatelessWidget {
     return const SizedBox.shrink();
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -360,17 +372,17 @@ class VideoModal extends StatelessWidget {
             '$label: ',
             style: TextStyle(
               fontWeight: FontWeight.w500,
-              color: Colors.grey[700],
+              color: context.watch<ThemeProvider>().getErrorTitleColor(),
             ),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                color: Colors.grey[600],
+                      Expanded(
+              child: Text(
+                value,
+                style: TextStyle(
+                  color: context.watch<ThemeProvider>().getSecondaryTextColor(),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -380,7 +392,7 @@ class VideoModal extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(isTablet ? 24 : 16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: context.watch<ThemeProvider>().getShimmerHighlightColor(),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(16),
           bottomRight: Radius.circular(16),
