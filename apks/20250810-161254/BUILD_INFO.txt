@@ -1,8 +1,0 @@
-Build Information
-=================
-Version: 20250810-161254
-Build Date: Sun Aug 10 16:20:16 UTC 2025
-Commit SHA: f17e12ec4ce8674226bd748c007fbf6ce0bbcbf7
-Branch/Tag: refs/heads/main
-Workflow: Build & Release VeL-MuSiC
-Run ID: 16863718642
