@@ -1,14 +1,37 @@
-name: Build & Release VeL-MuSiC
+name: Build & Release VeL-MuSiC (Multi-Platform)
 
 on:
   push:
+    branches:
+      - main
+      - master
     tags:
       - 'v*' # Runs only when a version tag like v1.0.0 is pushed
   workflow_dispatch: # Allow manual trigger
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.1.0)'
+        required: false
+        default: ''
+      create_release:
+        description: 'Create GitHub Release'
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: android
+            artifact_name: android
+          - os: windows-latest
+            platform: windows
+            artifact_name: windows
     
     steps:
       - name: 📥 Checkout Repository
@@ -28,6 +51,7 @@ jobs:
           channel: 'stable'
           
       - name: 🔍 Debug repository structure
+        shell: bash
         run: |
           echo "=== Repository Structure ==="
           ls -la
@@ -44,6 +68,7 @@ jobs:
       
       - name: 🔍 Find Flutter project directory
         id: find-flutter
+        shell: bash
         run: |
           # Check root directory first
           if [ -f "pubspec.yaml" ]; then
@@ -85,6 +110,7 @@ jobs:
 
       - name: 📦 Get version info
         id: version
+        shell: bash
         run: |
           if [ "${{ github.event_name }}" = "push" ] && [[ "${{ github.ref }}" == refs/tags/* ]]; then
             VERSION=${GITHUB_REF#refs/tags/}
@@ -97,92 +123,189 @@ jobs:
       - name: 📦 Install Dependencies
         working-directory: ${{ steps.find-flutter.outputs.FLUTTER_DIR }}
         run: flutter pub get
+
+      # Windows-specific setup
+      - name: 🔧 Setup Windows Build Environment
+        if: matrix.platform == 'windows'
+        run: |
+          flutter config --enable-windows-desktop
         
+      # Android builds
       - name: 🛠️ Build Universal APK
+        if: matrix.platform == 'android'
         working-directory: ${{ steps.find-flutter.outputs.FLUTTER_DIR }}
         run: flutter build apk --release
         
       - name: 🛠️ Build Split APKs (per ABI)
+        if: matrix.platform == 'android'
         working-directory: ${{ steps.find-flutter.outputs.FLUTTER_DIR }}
         run: flutter build apk --release --split-per-abi
         
       - name: 📦 Build Android App Bundle (AAB)
+        if: matrix.platform == 'android'
         working-directory: ${{ steps.find-flutter.outputs.FLUTTER_DIR }}
         run: flutter build appbundle --release
 
-      - name: 📁 Create APKs directory structure
+      # Windows builds
+      - name: 🛠️ Build Windows App
+        if: matrix.platform == 'windows'
+        working-directory: ${{ steps.find-flutter.outputs.FLUTTER_DIR }}
+        run: flutter build windows --release
+
+      - name: 📁 Create builds directory structure
+        shell: bash
         run: |
-          mkdir -p apks/${{ steps.version.outputs.VERSION }}
-          
-      - name: 📋 Copy APKs to repository folder
+          mkdir -p builds/${{ steps.version.outputs.VERSION }}
+
+      # Copy Android builds
+      - name: 📋 Copy Android builds to repository folder
+        if: matrix.platform == 'android'
+        shell: bash
         run: |
           # Copy universal APK
-          cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-release.apk apks/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-universal-${{ steps.version.outputs.VERSION }}.apk
+          cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-release.apk builds/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-universal-${{ steps.version.outputs.VERSION }}.apk
           
           # Copy split APKs if they exist
           if [ -f "${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk" ]; then
-            cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk apks/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-armeabi-v7a-${{ steps.version.outputs.VERSION }}.apk
+            cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk builds/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-armeabi-v7a-${{ steps.version.outputs.VERSION }}.apk
           fi
           
           if [ -f "${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk" ]; then
-            cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk apks/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-arm64-v8a-${{ steps.version.outputs.VERSION }}.apk
+            cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk builds/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-arm64-v8a-${{ steps.version.outputs.VERSION }}.apk
           fi
           
           if [ -f "${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-x86_64-release.apk" ]; then
-            cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-x86_64-release.apk apks/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-x86_64-${{ steps.version.outputs.VERSION }}.apk
+            cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-x86_64-release.apk builds/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-x86_64-${{ steps.version.outputs.VERSION }}.apk
           fi
           
           # Copy AAB file
           if [ -f "${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/bundle/release/app-release.aab" ]; then
-            cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/bundle/release/app-release.aab apks/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-${{ steps.version.outputs.VERSION }}.aab
+            cp ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/bundle/release/app-release.aab builds/${{ steps.version.outputs.VERSION }}/VeL-MuSiC-${{ steps.version.outputs.VERSION }}.aab
           fi
+
+      # Copy Windows builds
+      - name: 📋 Copy Windows builds to repository folder
+        if: matrix.platform == 'windows'
+        shell: bash
+        run: |
+          # Create Windows build archive
+          cd ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/windows/x64/runner/Release
+          
+          # Use PowerShell for Windows compression
+          powershell Compress-Archive -Path "." -DestinationPath "../../../../../VeL-MuSiC-windows-${{ steps.version.outputs.VERSION }}.zip"
+          
+          # Copy to builds directory
+          cd ../../../../../
+          cp VeL-MuSiC-windows-${{ steps.version.outputs.VERSION }}.zip builds/${{ steps.version.outputs.VERSION }}/
+
+      # Upload artifacts for cross-job sharing
+      - name: 📤 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}-builds-${{ steps.version.outputs.VERSION }}
+          path: builds/
+          retention-days: 5
+
+  # Combine all builds and create release
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: always() && (needs.build.result == 'success' || contains(needs.build.result, 'success'))
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📦 Get version info
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=$(date +'%Y%m%d-%H%M%S')
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Using version: $VERSION"
+
+      # Download all build artifacts
+      - name: 📥 Download Android builds
+        uses: actions/download-artifact@v4
+        with:
+          name: android-builds-${{ steps.version.outputs.VERSION }}
+          path: ./
+        continue-on-error: true
+
+      - name: 📥 Download Windows builds  
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-builds-${{ steps.version.outputs.VERSION }}
+          path: ./
+        continue-on-error: true
+
+      - name: 📋 Create unified build info
+        run: |
+          # Ensure builds directory exists
+          mkdir -p builds/${{ steps.version.outputs.VERSION }}
           
           # Create a build info file
-          echo "Build Information" > apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
-          echo "=================" >> apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
-          echo "Version: ${{ steps.version.outputs.VERSION }}" >> apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
-          echo "Build Date: $(date -u)" >> apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
-          echo "Commit SHA: ${{ github.sha }}" >> apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
-          echo "Branch/Tag: ${{ github.ref }}" >> apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
-          echo "Workflow: ${{ github.workflow }}" >> apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
-          echo "Run ID: ${{ github.run_id }}" >> apks/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "Build Information" > builds/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "=================" >> builds/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "Version: ${{ steps.version.outputs.VERSION }}" >> builds/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "Build Date: $(date -u)" >> builds/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "Commit SHA: ${{ github.sha }}" >> builds/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "Branch/Tag: ${{ github.ref }}" >> builds/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "Workflow: ${{ github.workflow }}" >> builds/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "Run ID: ${{ github.run_id }}" >> builds/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "" >> builds/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          echo "Platforms Built:" >> builds/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
           
-      - name: 📝 Update APKs index
+          # List available files
+          if ls builds/${{ steps.version.outputs.VERSION }}/*.apk 1> /dev/null 2>&1; then
+            echo "- Android (APK/AAB)" >> builds/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          fi
+          if ls builds/${{ steps.version.outputs.VERSION }}/*windows*.zip 1> /dev/null 2>&1; then
+            echo "- Windows (ZIP)" >> builds/${{ steps.version.outputs.VERSION }}/BUILD_INFO.txt
+          fi
+          
+      - name: 📝 Update builds index
         run: |
           # Create or update the index file
-          if [ ! -f "apks/README.md" ]; then
-            echo "# VeL-MuSiC APK Downloads" > apks/README.md
-            echo "" >> apks/README.md
-            echo "This directory contains all built APKs and AAB files for VeL-MuSiC." >> apks/README.md
-            echo "" >> apks/README.md
-            echo "## Available Builds" >> apks/README.md
-            echo "" >> apks/README.md
+          if [ ! -f "builds/README.md" ]; then
+            echo "# VeL-MuSiC Multi-Platform Builds" > builds/README.md
+            echo "" >> builds/README.md
+            echo "This directory contains all built applications for VeL-MuSiC across different platforms." >> builds/README.md
+            echo "" >> builds/README.md
+            echo "## Available Builds" >> builds/README.md
+            echo "" >> builds/README.md
           fi
           
           # Add current build to index
-          echo "### Version ${{ steps.version.outputs.VERSION }}" >> apks/README.md
-          echo "- **Build Date:** $(date -u)" >> apks/README.md
-          echo "- **Commit:** [${{ github.sha }}](../../commit/${{ github.sha }})" >> apks/README.md
-          echo "- **Files:**" >> apks/README.md
+          echo "### Version ${{ steps.version.outputs.VERSION }}" >> builds/README.md
+          echo "- **Build Date:** $(date -u)" >> builds/README.md
+          echo "- **Commit:** [${{ github.sha }}](../../commit/${{ github.sha }})" >> builds/README.md
+          echo "- **Files:**" >> builds/README.md
           
           # List all files in the version directory
-          for file in apks/${{ steps.version.outputs.VERSION }}/*; do
+          for file in builds/${{ steps.version.outputs.VERSION }}/*; do
             if [ -f "$file" ]; then
               filename=$(basename "$file")
-              echo "  - [$filename](${{ steps.version.outputs.VERSION }}/$filename)" >> apks/README.md
+              echo "  - [$filename](${{ steps.version.outputs.VERSION }}/$filename)" >> builds/README.md
             fi
           done
-          echo "" >> apks/README.md
+          echo "" >> builds/README.md
           
-      - name: 🚀 Commit APKs to repository
+      - name: 🚀 Commit builds to repository
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add apks/
+          git add builds/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Add APKs for version ${{ steps.version.outputs.VERSION }}"
+            git commit -m "Add multi-platform builds for version ${{ steps.version.outputs.VERSION }}"
             git push
           fi
         
@@ -191,33 +314,34 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-release.apk
-            ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-            ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-            ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-x86_64-release.apk
-            ${{ steps.find-flutter.outputs.FLUTTER_DIR }}/build/app/outputs/bundle/release/app-release.aab
+            builds/${{ steps.version.outputs.VERSION }}/*
           body: |
-            ## VeL-MuSiC Release ${{ steps.version.outputs.VERSION }}
+            ## VeL-MuSiC Multi-Platform Release ${{ steps.version.outputs.VERSION }}
             
-            ### 📱 Download Options
+            ### 📱 Android Downloads
             
             **Universal APK (Recommended for most users):**
-            - `app-release.apk` - Works on all Android devices
+            - `VeL-MuSiC-universal-*.apk` - Works on all Android devices
             
             **Optimized APKs (Smaller file size):**
-            - `app-armeabi-v7a-release.apk` - For older 32-bit ARM devices
-            - `app-arm64-v8a-release.apk` - For modern 64-bit ARM devices (most common)
-            - `app-x86_64-release.apk` - For x86_64 devices
+            - `VeL-MuSiC-armeabi-v7a-*.apk` - For older 32-bit ARM devices
+            - `VeL-MuSiC-arm64-v8a-*.apk` - For modern 64-bit ARM devices (most common)
+            - `VeL-MuSiC-x86_64-*.apk` - For x86_64 devices
             
             **For Play Store:**
-            - `app-release.aab` - Android App Bundle for Google Play Store
+            - `VeL-MuSiC-*.aab` - Android App Bundle for Google Play Store
+            
+            ### 🪟 Windows Downloads
+            
+            **Windows Desktop App:**
+            - `VeL-MuSiC-windows-*.zip` - Windows desktop application (extract and run)
             
             ### 📋 Build Information
             - **Build Date:** $(date -u)
             - **Commit:** ${{ github.sha }}
             
-            ### 📁 Repository APKs
-            All builds are also available in the [apks folder](../../tree/main/apks) of this repository.
+            ### 📁 Repository Builds
+            All builds are also available in the [builds folder](../../tree/main/builds) of this repository.
           draft: false
           prerelease: false
         env:
