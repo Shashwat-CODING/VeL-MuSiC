@@ -10,3 +10,9 @@ This directory contains all built applications for VeL-MuSiC across different pl
 - **Files:**
   - [BUILD_INFO.txt](20250818-020927/BUILD_INFO.txt)
 
+### Version 20250818-093330
+- **Build Date:** Mon Aug 18 09:33:31 UTC 2025
+- **Commit:** [0083562a6d186c61b1a9893ff7345fb5d87556a0](../../commit/0083562a6d186c61b1a9893ff7345fb5d87556a0)
+- **Files:**
+  - [BUILD_INFO.txt](20250818-093330/BUILD_INFO.txt)
+
