@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:provider/provider.dart';
 
 import '../../generated/l10n.dart';
 import '../../themes/text_styles.dart';
@@ -16,6 +17,7 @@ import '../../utils/adaptive_widgets/adaptive_widgets.dart';
 import '../../utils/bottom_modals.dart';
 import '../../utils/check_update.dart';
 import '../../themes/colors.dart';
+import '../../services/settings_manager.dart';
 import '../browse_screen/browse_screen.dart';
 import 'bottom_player.dart';
 
@@ -123,49 +125,50 @@ class _MainScreenState extends State<MainScreen> with WindowListener {
                     children: [
                       if (screenWidth >= 450)
                         NavigationRail(
-                          backgroundColor: spotifyBlack,
+                          backgroundColor: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            return settingsManager.dynamicColors && settingsManager.accentColor != null
+                                ? settingsManager.accentColor!.withOpacity(0.08)
+                                : Theme.of(context).colorScheme.surface;
+                          })(),
                           labelType: NavigationRailLabelType.none,
                           selectedLabelTextStyle:
-                              smallTextStyle(context, bold: true).copyWith(color: spotifyGreen),
+                              smallTextStyle(context, bold: true).copyWith(color: Theme.of(context).colorScheme.primary),
                           extended: (screenWidth > 1000),
                           onDestinationSelected: _goBranch,
                           destinations: [
                             NavigationRailDestination(
-                              selectedIcon:
-                                  const Icon(Icons.home, color: spotifyGreen),
-                              icon: const Icon(Icons.home_outlined, color: spotifyLightGrey),
+                              selectedIcon: Icon(Icons.home, color: Theme.of(context).colorScheme.primary),
+                              icon: Icon(Icons.home_outlined, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                               label: Text(
                                 S.of(context).Home,
-                                style: smallTextStyle(context, bold: false).copyWith(color: spotifyLightGrey),
+                                style: smallTextStyle(context, bold: false).copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                               ),
                             ),
                             NavigationRailDestination(
-                              selectedIcon:
-                                  const Icon(Icons.search, color: spotifyGreen),
-                              icon: const Icon(Icons.search, color: spotifyLightGrey),
+                              selectedIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
+                              icon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                               label: Text(
                                 'Search',
-                                style: smallTextStyle(context, bold: false).copyWith(color: spotifyLightGrey),
+                                style: smallTextStyle(context, bold: false).copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                               ),
                             ),
                             NavigationRailDestination(
-                              selectedIcon:
-                                  const Icon(Icons.library_music, color: spotifyGreen),
-                              icon: const Icon(Icons.library_music_outlined, color: spotifyLightGrey),
+                              selectedIcon: Icon(Icons.library_music, color: Theme.of(context).colorScheme.primary),
+                              icon: Icon(Icons.library_music_outlined, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                               label: Text(
                                 S.of(context).Saved,
-                                style: smallTextStyle(context, bold: false).copyWith(color: spotifyLightGrey),
+                                style: smallTextStyle(context, bold: false).copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                               ),
                             ),
                             NavigationRailDestination(
-                              selectedIcon:
-                                  const Icon(Icons.settings, color: spotifyGreen),
-                              icon: const Icon(Icons.settings_outlined, color: spotifyLightGrey),
+                              selectedIcon: Icon(Icons.settings, color: Theme.of(context).colorScheme.primary),
+                              icon: Icon(Icons.settings_outlined, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                               label: Text(
                                 S.of(context).Settings,
-                                style: smallTextStyle(context, bold: false).copyWith(color: spotifyLightGrey),
+                                style: smallTextStyle(context, bold: false).copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                               ),
-                            )
+                            ),
                           ],
                           selectedIndex: widget.navigationShell.currentIndex,
                         ),
@@ -183,27 +186,32 @@ class _MainScreenState extends State<MainScreen> with WindowListener {
                     currentIndex: widget.navigationShell.currentIndex,
                     items: [
                       SalomonBottomBarItem(
-                        activeIcon: const Icon(Icons.home, color: spotifyGreen),
-                        icon: const Icon(Icons.home_outlined, color: spotifyLightGrey),
-                        title: Text(S.of(context).Home, style: TextStyle(color: spotifyLightGrey)),
+                        activeIcon: Icon(Icons.home, color: Theme.of(context).colorScheme.primary),
+                        icon: Icon(Icons.home_outlined, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                        title: Text(S.of(context).Home, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
                       ),
                       SalomonBottomBarItem(
-                        activeIcon: const Icon(Icons.search, color: spotifyGreen),
-                        icon: const Icon(Icons.search, color: spotifyLightGrey),
-                        title: Text('Search', style: TextStyle(color: spotifyLightGrey)),
+                        activeIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
+                        icon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                        title: Text('Search', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
                       ),
                       SalomonBottomBarItem(
-                        activeIcon: const Icon(Icons.library_music, color: spotifyGreen),
-                        icon: const Icon(Icons.library_music_outlined, color: spotifyLightGrey),
-                        title: Text(S.of(context).Saved, style: TextStyle(color: spotifyLightGrey)),
+                        activeIcon: Icon(Icons.library_music, color: Theme.of(context).colorScheme.primary),
+                        icon: Icon(Icons.library_music_outlined, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                        title: Text(S.of(context).Saved, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
                       ),
                       SalomonBottomBarItem(
-                        activeIcon: const Icon(Icons.settings, color: spotifyGreen),
-                        icon: const Icon(Icons.settings_outlined, color: spotifyLightGrey),
-                        title: Text(S.of(context).Settings, style: TextStyle(color: spotifyLightGrey)),
+                        activeIcon: Icon(Icons.settings, color: Theme.of(context).colorScheme.primary),
+                        icon: Icon(Icons.settings_outlined, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                        title: Text(S.of(context).Settings, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
                       ),
                     ],
-                    backgroundColor: spotifyBlack,
+                    backgroundColor: (() {
+                      final settingsManager = context.watch<SettingsManager>();
+                      return settingsManager.dynamicColors && settingsManager.accentColor != null
+                          ? settingsManager.accentColor!.withOpacity(0.08)
+                          : Theme.of(context).colorScheme.surface;
+                    })(),
                     onTap: _goBranch,
                   )
                 : null,

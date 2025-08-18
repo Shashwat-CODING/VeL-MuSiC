@@ -59,17 +59,17 @@ class _PlayButtonState extends State<PlayButton> with TickerProviderStateMixin {
             height: 60,
             width: 60,
             alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: spotifyGreen,
-              borderRadius: BorderRadius.circular(30),
-            ),
+                     decoration: BoxDecoration(
+           color: Theme.of(context).colorScheme.primary,
+           borderRadius: BorderRadius.circular(30),
+         ),
             child: (buttonState == ButtonState.loading)
                 ? const AdaptiveProgressRing()
                 :                     AnimatedIcon(
                       icon: AnimatedIcons.play_pause,
                       progress: _animationController,
                       size: 40,
-                      color: spotifyBlack,
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
           );
         },

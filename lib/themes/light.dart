@@ -10,24 +10,24 @@ final defaultFontStyle = GoogleFonts.poppins();
 ThemeData lightTheme({required ColorScheme colorScheme}) {
   return ThemeData.light().copyWith(
     colorScheme: colorScheme.copyWith(
-      primary: spotifyGreen,
-      onPrimary: spotifyWhite,
-      secondary: spotifyDarkGreen,
-      onSecondary: spotifyWhite,
-      surface: spotifyWhite,
-      onSurface: spotifyBlack,
-      background: spotifyWhite,
-      onBackground: spotifyBlack,
-      surfaceContainerLow: const Color(0xFFF5F5F5),
-      surfaceContainerHigh: const Color(0xFFE0E0E0),
-      outline: spotifyMediumGrey,
-      outlineVariant: spotifyLightGrey,
+      primary: colorScheme.primary,
+      onPrimary: colorScheme.onPrimary,
+      secondary: colorScheme.secondary,
+      onSecondary: colorScheme.onSecondary,
+      surface: colorScheme.surface,
+      onSurface: colorScheme.onSurface,
+      background: colorScheme.background,
+      onBackground: colorScheme.onBackground,
+      surfaceContainerLow: colorScheme.surfaceContainerLow,
+      surfaceContainerHigh: colorScheme.surfaceContainerHigh,
+      outline: colorScheme.outline,
+      outlineVariant: colorScheme.outlineVariant,
     ),
-    primaryColor: spotifyGreen,
+    primaryColor: colorScheme.primary,
     scaffoldBackgroundColor:
-        Platform.isWindows ? Colors.transparent : spotifyWhite,
+        Platform.isWindows ? Colors.transparent : colorScheme.primary.withOpacity(0.05),
     appBarTheme: AppBarTheme(
-      backgroundColor: Colors.transparent,
+      backgroundColor: colorScheme.primary.withOpacity(0.03),
       centerTitle: true,
       surfaceTintColor: Platform.isWindows ? Colors.transparent : null,
       foregroundColor: spotifyBlack,
@@ -39,7 +39,7 @@ ThemeData lightTheme({required ColorScheme colorScheme}) {
       ),
     ),
     cardTheme: CardThemeData(
-      color: const Color(0xFFF5F5F5),
+      color: colorScheme.primary.withOpacity(0.08),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -47,8 +47,8 @@ ThemeData lightTheme({required ColorScheme colorScheme}) {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: spotifyGreen,
-        foregroundColor: spotifyWhite,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
@@ -57,28 +57,28 @@ ThemeData lightTheme({required ColorScheme colorScheme}) {
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: spotifyBlack,
+        foregroundColor: colorScheme.onSurface,
       ),
     ),
-    iconTheme: const IconThemeData(
-      color: spotifyBlack,
+    iconTheme: IconThemeData(
+      color: colorScheme.onSurface,
     ),
     textTheme: TextTheme(
-      headlineLarge: defaultFontStyle.copyWith(color: spotifyBlack),
-      headlineMedium: defaultFontStyle.copyWith(color: spotifyBlack),
-      headlineSmall: defaultFontStyle.copyWith(color: spotifyBlack),
-      bodyLarge: defaultFontStyle.copyWith(color: spotifyBlack),
-      bodyMedium: defaultFontStyle.copyWith(color: spotifyBlack),
-      bodySmall: defaultFontStyle.copyWith(color: spotifyMediumGrey),
-      displayLarge: defaultFontStyle.copyWith(color: spotifyBlack),
-      displayMedium: defaultFontStyle.copyWith(color: spotifyBlack),
-      displaySmall: defaultFontStyle.copyWith(color: spotifyBlack),
-      titleLarge: defaultFontStyle.copyWith(color: spotifyBlack),
-      titleMedium: defaultFontStyle.copyWith(color: spotifyBlack),
-      titleSmall: defaultFontStyle.copyWith(color: spotifyBlack),
-      labelLarge: defaultFontStyle.copyWith(color: spotifyBlack),
-      labelMedium: defaultFontStyle.copyWith(color: spotifyBlack),
-      labelSmall: defaultFontStyle.copyWith(color: spotifyMediumGrey),
+      headlineLarge: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      headlineMedium: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      headlineSmall: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      bodyLarge: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      bodyMedium: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      bodySmall: defaultFontStyle.copyWith(color: colorScheme.onSurfaceVariant),
+      displayLarge: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      displayMedium: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      displaySmall: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      titleLarge: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      titleMedium: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      titleSmall: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      labelLarge: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      labelMedium: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      labelSmall: defaultFontStyle.copyWith(color: colorScheme.onSurfaceVariant),
     ),
   );
 }

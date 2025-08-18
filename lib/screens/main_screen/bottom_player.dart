@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../services/media_player.dart';
+import '../../services/settings_manager.dart';
 import '../../utils/adaptive_widgets/adaptive_widgets.dart';
 import '../../utils/enhanced_image.dart';
 import '../../themes/colors.dart';
@@ -25,7 +26,12 @@ class BottomPlayer extends StatelessWidget {
                   color: Platform.isWindows
                       ? fluent_ui.FluentTheme.of(context)
                           .scaffoldBackgroundColor
-                      : spotifyDarkGrey,
+                      : (() {
+                          final settingsManager = GetIt.I<SettingsManager>();
+                          return settingsManager.dynamicColors && settingsManager.accentColor != null
+                              ? settingsManager.accentColor!.withOpacity(0.12)
+                              : Theme.of(context).colorScheme.surfaceContainerLow;
+                        })(),
                   child: GestureDetector(
                     onTap: () {
                       context.push('/player');
@@ -92,7 +98,7 @@ class BottomPlayer extends StatelessWidget {
                             title: Text(
                               currentSong.title,
                               style: TextStyle(
-                                color: spotifyWhite,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontWeight: FontWeight.w500,
                                 fontSize: 14,
                               ),
@@ -105,7 +111,7 @@ class BottomPlayer extends StatelessWidget {
                                     currentSong.artist ??
                                         currentSong.extras!['subtitle'],
                                     style: TextStyle(
-                                      color: spotifyLightGrey,
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                                       fontSize: 12,
                                     ),
                                     maxLines: 1,
@@ -138,7 +144,7 @@ class BottomPlayer extends StatelessWidget {
                                               buttonState == ButtonState.playing
                                                   ? Icons.pause
                                                   : Icons.play_arrow,
-                                              color: spotifyWhite,
+                                              color: Theme.of(context).colorScheme.onSurface,
                                               size: 30,
                                             ),
                                           );

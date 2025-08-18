@@ -154,11 +154,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: Text(
                     'VeL-MuSic',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: spotifyWhite,
-                    ),
+                                               style: TextStyle(
+                             fontSize: 24,
+                             fontWeight: FontWeight.bold,
+                             color: Theme.of(context).colorScheme.onSurface,
+                           ),
                   ),
                 ),
                 IconButton(
@@ -192,11 +192,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   Text(
                                     _getGreeting(),
-                                    style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: spotifyWhite,
-                                    ),
+                                                                               style: TextStyle(
+                                             fontSize: 28,
+                                             fontWeight: FontWeight.bold,
+                                             color: Theme.of(context).colorScheme.onSurface,
+                                           ),
                                   ),
                                 ],
                               ),

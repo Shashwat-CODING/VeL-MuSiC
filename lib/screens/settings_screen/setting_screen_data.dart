@@ -21,42 +21,42 @@ List<SettingItem> settingScreenData(BuildContext context) => [
       SettingItem(
         title: S.of(context).Appearence,
         icon: Icons.looks,
-        color: spotifyGreen,
+        color: Theme.of(context).colorScheme.primary,
         hasNavigation: true,
         location: '/settings/appearence',
       ),
       SettingItem(
         title: S.of(context).Content,
         icon: CupertinoIcons.music_note_list,
-        color: spotifyGreen,
+        color: Theme.of(context).colorScheme.primary,
         hasNavigation: true,
         location: '/settings/content',
       ),
       SettingItem(
         title: S.of(context).Audio_And_Playback,
         icon: CupertinoIcons.music_note,
-        color: spotifyGreen,
+        color: Theme.of(context).colorScheme.primary,
         hasNavigation: true,
         location: '/settings/playback',
       ),
       SettingItem(
         title: S.of(context).Backup_And_Restore,
         icon: Icons.settings_backup_restore_outlined,
-        color: spotifyGreen,
+        color: Theme.of(context).colorScheme.primary,
         hasNavigation: true,
         location: '/settings/backup_restore',
       ),
       SettingItem(
         title: S.of(context).About,
         icon: Icons.info_rounded,
-        color: spotifyGreen,
+        color: Theme.of(context).colorScheme.primary,
         hasNavigation: true,
         location: '/settings/about',
       ),
       SettingItem(
         title: S.of(context).Check_For_Update,
         icon: Icons.update_outlined,
-        color: spotifyGreen,
+        color: Theme.of(context).colorScheme.primary,
         onTap: (context) async {
           Modals.showCenterLoadingModal(context);
           checkUpdate().then((updateInfo) {

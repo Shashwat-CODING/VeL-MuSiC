@@ -18,25 +18,25 @@ ColorScheme darkScheme = const ColorScheme.dark();
 ThemeData darkTheme({required ColorScheme colorScheme}) {
   return ThemeData.dark().copyWith(
     colorScheme: colorScheme.copyWith(
-      primary: spotifyGreen,
-      onPrimary: spotifyBlack,
-      secondary: spotifyDarkGreen,
-      onSecondary: spotifyBlack,
-      surface: spotifyBlack,
-      onSurface: spotifyWhite,
-      background: spotifyBlack,
-      onBackground: spotifyWhite,
-      surfaceContainerLow: spotifyDarkGrey,
-      surfaceContainerHigh: spotifyMediumGrey,
-      outline: spotifyMediumGrey,
-      outlineVariant: spotifyLightGrey,
+      primary: colorScheme.primary,
+      onPrimary: colorScheme.onPrimary,
+      secondary: colorScheme.secondary,
+      onSecondary: colorScheme.onSecondary,
+      surface: colorScheme.surface,
+      onSurface: colorScheme.onSurface,
+      background: colorScheme.background,
+      onBackground: colorScheme.onBackground,
+      surfaceContainerLow: colorScheme.surfaceContainerLow,
+      surfaceContainerHigh: colorScheme.surfaceContainerHigh,
+      outline: colorScheme.outline,
+      outlineVariant: colorScheme.outlineVariant,
     ),
     scaffoldBackgroundColor:
-        Platform.isWindows ? Colors.transparent : spotifyBlack,
-    primaryColor: spotifyGreen,
+        Platform.isWindows ? Colors.transparent : colorScheme.primary.withOpacity(0.1),
+    primaryColor: colorScheme.primary,
     appBarTheme: AppBarTheme(
       centerTitle: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: colorScheme.primary.withOpacity(0.05),
       surfaceTintColor: Platform.isWindows ? Colors.transparent : null,
       foregroundColor: spotifyWhite,
       systemOverlayStyle: const SystemUiOverlayStyle(
@@ -47,7 +47,7 @@ ThemeData darkTheme({required ColorScheme colorScheme}) {
       ),
     ),
     cardTheme: CardThemeData(
-      color: spotifyDarkGrey,
+      color: colorScheme.primary.withOpacity(0.15),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -55,8 +55,8 @@ ThemeData darkTheme({required ColorScheme colorScheme}) {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: spotifyGreen,
-        foregroundColor: spotifyBlack,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
@@ -65,28 +65,28 @@ ThemeData darkTheme({required ColorScheme colorScheme}) {
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: spotifyWhite,
+        foregroundColor: colorScheme.onSurface,
       ),
     ),
-    iconTheme: const IconThemeData(
-      color: spotifyWhite,
+    iconTheme: IconThemeData(
+      color: colorScheme.onSurface,
     ),
     textTheme: TextTheme(
-      headlineLarge: defaultFontStyle.copyWith(color: spotifyWhite),
-      headlineMedium: defaultFontStyle.copyWith(color: spotifyWhite),
-      headlineSmall: defaultFontStyle.copyWith(color: spotifyWhite),
-      bodyLarge: defaultFontStyle.copyWith(color: spotifyWhite),
-      bodyMedium: defaultFontStyle.copyWith(color: spotifyWhite),
-      bodySmall: defaultFontStyle.copyWith(color: spotifyLightGrey),
-      displayLarge: defaultFontStyle.copyWith(color: spotifyWhite),
-      displayMedium: defaultFontStyle.copyWith(color: spotifyWhite),
-      displaySmall: defaultFontStyle.copyWith(color: spotifyWhite),
-      titleLarge: defaultFontStyle.copyWith(color: spotifyWhite),
-      titleMedium: defaultFontStyle.copyWith(color: spotifyWhite),
-      titleSmall: defaultFontStyle.copyWith(color: spotifyWhite),
-      labelLarge: defaultFontStyle.copyWith(color: spotifyWhite),
-      labelMedium: defaultFontStyle.copyWith(color: spotifyWhite),
-      labelSmall: defaultFontStyle.copyWith(color: spotifyLightGrey),
+      headlineLarge: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      headlineMedium: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      headlineSmall: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      bodyLarge: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      bodyMedium: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      bodySmall: defaultFontStyle.copyWith(color: colorScheme.onSurfaceVariant),
+      displayLarge: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      displayMedium: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      displaySmall: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      titleLarge: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      titleMedium: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      titleSmall: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      labelLarge: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      labelMedium: defaultFontStyle.copyWith(color: colorScheme.onSurface),
+      labelSmall: defaultFontStyle.copyWith(color: colorScheme.onSurfaceVariant),
     ),
   );
 }

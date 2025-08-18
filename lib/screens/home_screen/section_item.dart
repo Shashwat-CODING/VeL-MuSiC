@@ -83,7 +83,7 @@ class _SectionItemState extends State<SectionItem> {
                       : Text(
                           widget.section['strapline'],
                           style: TextStyle(
-                              color: spotifyLightGrey, fontSize: 14),
+                              color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 14),
                         ),
                   subtitle: widget.section['strapline'] != null
                       ? Text(widget.section['title'] ?? '',

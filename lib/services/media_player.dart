@@ -235,9 +235,25 @@ class MediaPlayer extends ChangeNotifier {
         if (_songList!.isNotEmpty && _currentIndex.value != null) {
           MediaItem item = _songList![_currentIndex.value!].tag;
           addHistory(item.extras!);
+          
+          // Extract colors from artwork and set as accent color
+          _extractAndSetAccentColor();
         }
       }
     });
+  }
+
+  void _extractAndSetAccentColor() {
+    final currentSong = _currentSongNotifier.value;
+    print('🎵 _extractAndSetAccentColor called for song: ${currentSong?.title}');
+    if (currentSong?.extras?['thumbnails'] != null &&
+        currentSong!.extras!['thumbnails'].isNotEmpty) {
+      final imageUrl = currentSong.extras!['thumbnails'].first['url'];
+      print('🎵 Extracting color from thumbnail: $imageUrl');
+      GetIt.I<SettingsManager>().setAccentColorFromArtwork(imageUrl);
+    } else {
+      print('🎵 No thumbnails found for song: ${currentSong?.title}');
+    }
   }
 
   changeLoopMode() {
@@ -323,6 +339,10 @@ class MediaPlayer extends ChangeNotifier {
       await _playlist.add(source);
       await _player.load();
       _player.play();
+      
+      // Extract colors from artwork and set as accent color
+      _extractAndSetAccentColorFromSong(song);
+      
       if (autoFetch == true && song['status'] != 'DOWNLOADED') {
         List nextSongs =
             await GetIt.I<YTMusic>().getNextSongList(videoId: song['videoId']);
@@ -330,6 +350,22 @@ class MediaPlayer extends ChangeNotifier {
         await _addSongListToQueue(nextSongs);
       }
     }
+  }
+
+  void _extractAndSetAccentColorFromSong(Map<String, dynamic> song) {
+    print('🎵 _extractAndSetAccentColorFromSong called for song: ${song['title']}');
+    if (song['thumbnails'] != null && song['thumbnails'].isNotEmpty) {
+      final imageUrl = song['thumbnails'].first['url'];
+      print('🎵 Extracting color from song thumbnail: $imageUrl');
+      GetIt.I<SettingsManager>().setAccentColorFromArtwork(imageUrl);
+    } else {
+      print('🎵 No thumbnails found for song: ${song['title']}');
+    }
+  }
+
+  // Public method to extract colors from any song
+  void extractColorsFromSong(Map<String, dynamic> song) {
+    _extractAndSetAccentColorFromSong(song);
   }
 
   Future<void> playNext(Map<String, dynamic> song) async {
@@ -359,11 +395,19 @@ class MediaPlayer extends ChangeNotifier {
     if (!(_player.playing)) {
       _player.play();
     }
+    
+    // Extract colors from the current song's artwork
+    if (songs.isNotEmpty && index < songs.length) {
+      _extractAndSetAccentColorFromSong(songs[index]);
+    }
   }
 
   Future<void> addToQueue(Map<String, dynamic> song) async {
     if (song['videoId'] != null) {
       await _playlist.add(await _getAudioSource(song));
+      
+      // Extract colors from artwork and set as accent color
+      _extractAndSetAccentColorFromSong(song);
     } else if (song['playlistId'] != null) {
       List songs =
           await GetIt.I<YTMusic>().getPlaylistSongs(song['playlistId']);
@@ -386,6 +430,9 @@ class MediaPlayer extends ChangeNotifier {
     await _addSongListToQueue(songs, isNext: false);
     await _player.load();
     _player.play();
+    
+    // Extract colors from artwork and set as accent color
+    _extractAndSetAccentColorFromSong(song);
   }
 
   Future<void> startPlaylistSongs(Map endpoint) async {
@@ -395,6 +442,11 @@ class MediaPlayer extends ChangeNotifier {
     await _addSongListToQueue(songs);
     await _player.load();
     _player.play();
+    
+    // Extract colors from the first song's artwork
+    if (songs.isNotEmpty) {
+      _extractAndSetAccentColorFromSong(songs.first);
+    }
   }
 
   Future<void> stop() async {
@@ -418,6 +470,11 @@ class MediaPlayer extends ChangeNotifier {
       await _playlist.insert(index, await _getAudioSource(mapSong));
       index++;
     });
+    
+    // Extract colors from the first song's artwork if songs were added
+    if (songs.isNotEmpty) {
+      _extractAndSetAccentColorFromSong(songs.first);
+    }
   }
 
   setTimer(Duration duration) {

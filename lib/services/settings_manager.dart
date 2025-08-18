@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
+import '../themes/colors.dart';
 
 import '../ytmusic/ytmusic.dart';
 
@@ -37,6 +40,10 @@ class SettingsManager extends ChangeNotifier {
   Color? _accentColor;
   bool _amoledBlack = true;
   bool _dynamicColors = false;
+  
+
+  
+
   WindowEffect _windowEffect = WindowEffect.disabled;
   bool _equalizerEnabled = false;
   List<double> _equalizerBandsGain = [];
@@ -153,10 +160,110 @@ class SettingsManager extends ChangeNotifier {
   }
 
   set accentColor(Color? color) {
+    print('🎨 Setting accent color to: $color');
     int? c = color?.value;
     _box.put('ACCENT_COLOR', c);
     _accentColor = color;
+    
+    // Force immediate UI rebuild
     notifyListeners();
+    
+    // Multiple delayed notifications to ensure all UI elements rebuild
+    Future.delayed(const Duration(milliseconds: 50), () {
+      print('🎨 Delayed notification 1');
+      notifyListeners();
+    });
+    
+    Future.delayed(const Duration(milliseconds: 150), () {
+      print('🎨 Delayed notification 2');
+      notifyListeners();
+    });
+    
+    Future.delayed(const Duration(milliseconds: 300), () {
+      print('🎨 Delayed notification 3');
+      notifyListeners();
+    });
+    
+    // Force a complete app rebuild
+    Future.delayed(const Duration(milliseconds: 400), () {
+      forceAppRebuild();
+    });
+    
+    print('🎨 Notified listeners, new accent color: $_accentColor');
+  }
+
+  Future<void> setAccentColorFromArtwork(String? imageUrl) async {
+    if (imageUrl == null) return;
+    
+    print('🎨 Extracting color from artwork: $imageUrl');
+    
+    try {
+      // Use the same method as the player for consistent color extraction
+      final colorScheme = await ColorScheme.fromImageProvider(
+        provider: CachedNetworkImageProvider(imageUrl),
+      );
+      
+      final extractedColor = colorScheme.primary;
+      
+      print('🎨 Extracted color from image: $extractedColor');
+      print('🎨 Final selected color: $extractedColor');
+
+      accentColor = extractedColor;
+      print('🎨 Set accent color to: $accentColor');
+      print('🎨 Enhanced notification system activated');
+      
+    } catch (e) {
+      print('❌ Color extraction failed: $e');
+      print('🎨 Using fallback color: spotifyGreen');
+      accentColor = spotifyGreen;
+      print('🎨 Enhanced notification system activated');
+      print('🎨 Set accent color to: $accentColor');
+    }
+  }
+
+  // Force a complete app rebuild by triggering multiple notifications
+  void forceAppRebuild() {
+    print('🔄 Forcing complete app rebuild');
+    notifyListeners();
+    
+    // Multiple delayed notifications to ensure all UI rebuilds
+    Future.delayed(const Duration(milliseconds: 100), () {
+      print('🔄 Delayed rebuild notification 1');
+      notifyListeners();
+    });
+    
+    Future.delayed(const Duration(milliseconds: 300), () {
+      print('🔄 Delayed rebuild notification 2');
+      notifyListeners();
+    });
+    
+    Future.delayed(const Duration(milliseconds: 500), () {
+      print('🔄 Delayed rebuild notification 3');
+      notifyListeners();
+    });
+  }
+
+  // Get gradient colors based on accent color
+  List<Color> getGradientColors() {
+    if (_accentColor == null) return [spotifyGreen, spotifyDarkGreen];
+    
+    return [
+      _accentColor!,
+      _accentColor!.withOpacity(0.8),
+      _accentColor!.withOpacity(0.6),
+    ];
+  }
+
+  // Get subtle background color with accent color
+  Color getSubtleBackgroundColor() {
+    if (_accentColor == null) return spotifyDarkGrey;
+    return _accentColor!.withOpacity(0.15);
+  }
+
+  // Get card background color with accent color
+  Color getCardBackgroundColor() {
+    if (_accentColor == null) return spotifyDarkGrey;
+    return _accentColor!.withOpacity(0.2);
   }
 
   set amoledBlack(bool val) {

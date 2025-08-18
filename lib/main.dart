@@ -17,6 +17,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
+
 import 'generated/l10n.dart';
 import 'services/download_manager.dart';
 import 'services/file_storage.dart';
@@ -32,6 +33,10 @@ import 'ytmusic/ytmusic.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize ColorExtractor
+
+  
   if (Platform.isAndroid) {
     await JustAudioBackground.init(
       androidNotificationChannelId: 'com.vel.music',
@@ -134,6 +139,7 @@ class VelMusic extends StatelessWidget {
                 darkScheme: darkScheme,
               )
             : MaterialApp.router(
+                key: ValueKey(settingsManager.accentColor?.value ?? 0), // Force rebuild when accent color changes
                 title: 'VeL-MuSic',
                 routerConfig: router,
                 locale:
@@ -146,26 +152,154 @@ class VelMusic extends StatelessWidget {
                 ],
                 supportedLocales: S.delegate.supportedLocales,
                 debugShowCheckedModeBanner: false,
-                themeMode: context.watch<SettingsManager>().themeMode,
+                themeMode: (() {
+                  final themeMode = context.watch<SettingsManager>().themeMode;
+                  print('🎨 Current theme mode: $themeMode');
+                  return themeMode;
+                })(),
                 theme: lightTheme(
-                  colorScheme: context.watch<SettingsManager>().dynamicColors &&
-                          lightScheme != null
+                  colorScheme: (!context.watch<SettingsManager>().dynamicColors &&
+                          lightScheme != null)
                       ? lightScheme
-                      : ColorScheme.fromSeed(
-                          seedColor: spotifyGreen,
-                          primary: spotifyGreen,
+                      : ColorScheme(
                           brightness: Brightness.light,
+                          primary: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            final accentColor = settingsManager.dynamicColors ? settingsManager.accentColor : null;
+                            print('🎨 Light theme primary color: $accentColor (dynamicColors: ${settingsManager.dynamicColors})');
+                            return accentColor ?? spotifyGreen;
+                          })(),
+                          onPrimary: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            if (settingsManager.dynamicColors && settingsManager.accentColor != null) {
+                              // Use white text on accent color for good contrast
+                              return Colors.white;
+                            }
+                            // Use black text on Spotify green for good contrast
+                            return spotifyBlack;
+                          })(),
+                          secondary: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            return settingsManager.dynamicColors ? (settingsManager.accentColor ?? spotifyDarkGreen) : spotifyDarkGreen;
+                          })(),
+                          onSecondary: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            return settingsManager.dynamicColors && settingsManager.accentColor != null ? Colors.white : spotifyBlack;
+                          })(),
+                          surface: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            Color surfaceColor;
+                            if (settingsManager.dynamicColors && settingsManager.accentColor != null) {
+                              // Use a very light tint of the accent color for surface
+                              surfaceColor = settingsManager.accentColor!.withOpacity(0.08);
+                            } else {
+                              // Use white for surface in light theme
+                              surfaceColor = Colors.white;
+                            }
+                            print('🎨 Light theme surface color: $surfaceColor (dynamicColors: ${settingsManager.dynamicColors})');
+                            return surfaceColor;
+                          })(),
+                          onSurface: spotifyBlack,
+                          background: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            Color backgroundColor;
+                            if (settingsManager.dynamicColors && settingsManager.accentColor != null) {
+                              // Use a very light tint of the accent color for background
+                              backgroundColor = settingsManager.accentColor!.withOpacity(0.05);
+                            } else {
+                              // Use white for background in light theme
+                              backgroundColor = Colors.white;
+                            }
+                            print('🎨 Light theme background color: $backgroundColor (dynamicColors: ${settingsManager.dynamicColors})');
+                            return backgroundColor;
+                          })(),
+                          onBackground: spotifyBlack,
+                          surfaceContainerLow: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            if (settingsManager.dynamicColors && settingsManager.accentColor != null) {
+                              // Use a light tint of the accent color for surface containers
+                              return settingsManager.accentColor!.withOpacity(0.12);
+                            } else {
+                              // Use light gray for surface containers in light theme
+                              return const Color(0xFFF5F5F5);
+                            }
+                          })(),
+                          surfaceContainerHigh: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            if (settingsManager.dynamicColors && settingsManager.accentColor != null) {
+                              // Use a medium tint of the accent color for surface containers
+                              return settingsManager.accentColor!.withOpacity(0.18);
+                            } else {
+                              // Use medium gray for surface containers in light theme
+                              return const Color(0xFFE0E0E0);
+                            }
+                          })(),
+                          outline: spotifyMediumGrey,
+                          outlineVariant: spotifyLightGrey,
+                          error: Colors.red,
+                          onError: Colors.white,
                         ),
                 ),
                 darkTheme: darkTheme(
-                  colorScheme: context.watch<SettingsManager>().dynamicColors &&
-                          darkScheme != null
+                  colorScheme: (!context.watch<SettingsManager>().dynamicColors &&
+                          darkScheme != null)
                       ? darkScheme
-                      : ColorScheme.fromSeed(
-                          seedColor: spotifyGreen,
-                          primary: spotifyGreen,
+                      : ColorScheme(
                           brightness: Brightness.dark,
-                          surface: spotifyBlack,
+                          primary: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            return settingsManager.dynamicColors ? (settingsManager.accentColor ?? spotifyGreen) : spotifyGreen;
+                          })(),
+                          onPrimary: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            return settingsManager.dynamicColors && settingsManager.accentColor != null ? spotifyBlack : spotifyWhite;
+                          })(),
+                          secondary: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            return settingsManager.dynamicColors ? (settingsManager.accentColor ?? spotifyDarkGreen) : spotifyDarkGreen;
+                          })(),
+                          onSecondary: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            return settingsManager.dynamicColors && settingsManager.accentColor != null ? spotifyBlack : spotifyWhite;
+                          })(),
+                          surface: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            if (!settingsManager.dynamicColors || settingsManager.accentColor == null) {
+                              return settingsManager.amoledBlack ? Colors.black : spotifyBlack;
+                            }
+                            if (settingsManager.amoledBlack) {
+                              return settingsManager.accentColor!.withOpacity(0.15);
+                            }
+                            return settingsManager.accentColor!.withOpacity(0.1);
+                          })(),
+                          onSurface: spotifyWhite,
+                          background: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            if (!settingsManager.dynamicColors || settingsManager.accentColor == null) {
+                              return settingsManager.amoledBlack ? Colors.black : spotifyBlack;
+                            }
+                            if (settingsManager.amoledBlack) {
+                              return settingsManager.accentColor!.withOpacity(0.08);
+                            }
+                            return settingsManager.accentColor!.withOpacity(0.05);
+                          })(),
+                          onBackground: spotifyWhite,
+                          surfaceContainerLow: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            return settingsManager.dynamicColors && settingsManager.accentColor != null 
+                                ? settingsManager.accentColor!.withOpacity(0.2) 
+                                : spotifyDarkGrey;
+                          })(),
+                          surfaceContainerHigh: (() {
+                            final settingsManager = context.watch<SettingsManager>();
+                            return settingsManager.dynamicColors && settingsManager.accentColor != null 
+                                ? settingsManager.accentColor!.withOpacity(0.25) 
+                                : spotifyMediumGrey;
+                          })(),
+                          outline: spotifyMediumGrey,
+                          outlineVariant: spotifyLightGrey,
+                          error: Colors.red,
+                          onError: Colors.white,
                         ),
                 ),
               ),
@@ -176,6 +310,7 @@ class VelMusic extends StatelessWidget {
   _buildFluentApp(SettingsManager settingsManager,
       {ColorScheme? lightScheme, ColorScheme? darkScheme}) {
     return fluent_ui.FluentApp.router(
+      key: ValueKey(settingsManager.accentColor?.value ?? 0), // Force rebuild when accent color changes
       title: 'VeL-MuSic',
       debugShowCheckedModeBanner: false,
       routerConfig: router,

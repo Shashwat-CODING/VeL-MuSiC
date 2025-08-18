@@ -82,7 +82,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   borderRadius:
                       BorderRadius.circular(Platform.isWindows ? 4.0 : 35),
                   hintText: S.of(context).Search_Settings,
-                  prefix: Icon(Icons.search, color: spotifyGreen),
+                  prefix: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
                   suffix: searchController.text.trim().isNotEmpty
                       ? GestureDetector(
                           onTap: () {
@@ -90,7 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             searchText = "";
                             setState(() {});
                           },
-                          child: Icon(CupertinoIcons.clear, color: spotifyGreen),
+                          child: Icon(CupertinoIcons.clear, color: Theme.of(context).colorScheme.primary),
                         )
                       : null,
                 ),
@@ -142,7 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ? Icon(
                               AdaptiveIcons.chevron_right,
                               size: 30,
-                              color: spotifyGreen,
+                              color: Theme.of(context).colorScheme.primary,
                             )
                           : null),
                   onTap: () {
